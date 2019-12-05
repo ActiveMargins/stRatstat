@@ -1,21 +1,18 @@
 Package: stRatstat
-Title: This Function Launches The StRat Stat Application in a R Shiny Window
-Version: 0.0.0.9000
-Authors@R: 
-    person(given = "Daniel",
-           family = "Coutts",
-           role = c("aut", "cre"),
-           email = "dannycoutts@gmail.com",
-           comment = c(ORCID = "0000-0002-2345-2865"))
-Description: This package allows for users to digitize stratigraphic sections and then them into a discretized format that can be further analyzed. This process is done through importing an image into stRat stat and hand-picking points on the stratigraphic section. stRat stat includes grain size profiles, sediemntary structures, and three levels of statigraphic heirarchy (i.e., facies, architectral elements, and architectural element sets). When input points are processed, statistics (e.g., min/mean/max grain size, net:gross, thickness) can be computed for each heirarchy level. Additionally both discrete and continuous measurements can be joined to the data and summarized at each heirarchical level.
+Type: Package
+Title: Stratigraphic Section Digitizer
+Version: 0.1.0
+Author: Daniel Coutts <dannycoutts@gmail.com>
+Maintainer: Daniel Coutts <dannycoutts@gmail.com>
+Description: A R Shiny based application that is used to convert graphical/hand-drawn stratigraphic/measured sections into a numerical format.
 License: MIT
 Encoding: UTF-8
-LazyData: FALSE
-Depends:
-  shiny, 
+LazyData: true
+Imports:
+  shiny,
   imager, 
   ggplot2, 
   dplyr, 
   zoo, 
   DT
-  
+RoxygenNote: 7.0.2
