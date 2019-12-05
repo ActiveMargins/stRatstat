@@ -1,43 +1,40 @@
-#' @title Launch stRat stat
-#' @description This function launches the stRat stat application in a R Shiny window. See the GitHub repository for more detailed information.
-#' @import shiny, imager, ggplot2, dplyr, zoo, DT
-#' @return This function launches the stRat stat program in a shiny window
-#' @examples
-#' To launch stRat stat enter:
-#' launchstRatstat()
+#' Launch stRat stat
+#'
+#' This function launches stRat stat in a Shiny app window. See Github repository (ActiveMargins/stRatstat) for detailed documentation.
+#' @import shiny
+#' @import imager
+#' @import ggplot2
+#' @import dplyr
+#' @import zoo
+#' @import DT
+#' @export
 
 
 launchstRatstat <- function(){
 
-  library(shiny)
-  library(imager)
-  library(ggplot2)
-  library(dplyr)
-  library(zoo)
-  library(DT)
 
   # Define UI for application that draws a histogram
-  ui <- navbarPage("stRat stat",
-                   navbarMenu("Digitize stratigraphic data",
+  ui <- shiny::navbarPage("stRat stat",
+                   shiny::navbarMenu("Digitize stratigraphic data",
                               ##################################################################
                               #First panel for Loading and Saving Data
                               ##################################################################
-                              tabPanel("1. Save/Load Data" ,
-                                       sidebarLayout(
-                                         sidebarPanel(width = 3,
-                                                      h4("Save Data"),
-                                                      h6("To save inputs prior to processing: save then download the file"),
-                                                      actionButton("save_data", "Compile save file"),
-                                                      downloadButton("downloadSaveData", "Download save file"),
-                                                      hr(),
-                                                      h4("Load Data"),
-                                                      h6("To load points prior to processing: select file then click load data"),
-                                                      fileInput("load_data_file", "Choose .csv save file"),
-                                                      actionButton("load_data", "Load Data")
+                              shiny::tabPanel("1. Save/Load Data" ,
+                                       shiny::sidebarLayout(
+                                         shiny::sidebarPanel(width = 3,
+                                                      shiny::h4("Save Data"),
+                                                      shiny::h6("To save inputs prior to processing: save then download the file"),
+                                                      shiny::actionButton("save_data", "Compile save file"),
+                                                      shiny::downloadButton("downloadSaveData", "Download save file"),
+                                                      shiny::hr(),
+                                                      shiny::h4("Load Data"),
+                                                      shiny::h6("To load points prior to processing: select file then click load data"),
+                                                      shiny::fileInput("load_data_file", "Choose .csv save file"),
+                                                      shiny::actionButton("load_data", "Load Data")
                                          ), # end sidebarPanel
-                                         mainPanel(
-                                           p("Welcome to stRat stat, an R-based digitizer that converts drawn stratigraphic sections/core logs to a numeric format. Please refer to the GitHub repository and reference the documentation on the use of stRat stat."),
-                                           p("GitHub repo: https://github.com/ActiveMargins/stRatstat")
+                                         shiny::mainPanel(
+                                           shiny::p("Welcome to stRat stat, an R-based digitizer that converts drawn stratigraphic sections/core logs to a numeric format. Please refer to the GitHub repository and reference the documentation on the use of stRat stat."),
+                                           shiny::p("GitHub repo: https://github.com/ActiveMargins/stRatstat")
                                          ) # end main panel
                                        ) #end sidebarLayout
                               ), #end first panel
@@ -45,17 +42,17 @@ launchstRatstat <- function(){
                               ##################################################################
                               #Second panel for digitizing data
                               ##################################################################
-                              tabPanel("2. Digitize beds and grain sizes",
-                                       sidebarLayout(
-                                         sidebarPanel( width = 2,
-                                                       fileInput(inputId = 'files',
+                              shiny::tabPanel("2. Digitize beds and grain sizes",
+                                       shiny::sidebarLayout(
+                                         shiny::sidebarPanel( width = 2,
+                                                       shiny::fileInput(inputId = 'files',
                                                                  label = 'Select an Image',
                                                                  accept=c('image/png', 'image/jpeg')
                                                        ),
-                                                       hr(),
-                                                       numericInput("sectthick_top", "Top of section thickness", 1),
-                                                       numericInput("sectthick_base", "Base of section thickness", 0),
-                                                       hr(),
+                                                       shiny::hr(),
+                                                       shiny::numericInput("sectthick_top", "Top of section thickness", 1),
+                                                       shiny::numericInput("sectthick_base", "Base of section thickness", 0),
+                                                       shiny::hr(),
                                                        checkboxGroupInput("GS_checkGroup", label = h5("What Grain Sizes are in the section?"),
                                                                           choices = list("Mud" = 1,
                                                                                          "Silt" = 2,
