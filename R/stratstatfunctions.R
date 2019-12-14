@@ -1,40 +1,35 @@
-#' Launch stRat stat
-#'
-#' This function launches stRat stat in a Shiny app window. See Github repository (ActiveMargins/stRatstat) for detailed documentation.
-#' @import shiny
-#' @import imager
-#' @import ggplot2
-#' @import dplyr
-#' @import zoo
-#' @import DT
+#' @title Launch stRat stat
+#' @description This function launches the stRat stat application in a R Shiny window. See the GitHub repository for more detailed information.
+#' @import shiny imager ggplot2 dplyr zoo DT
+#' @return This function launches the stRat stat program in a shiny window
 #' @export
 
 
 launchstRatstat <- function(){
 
+  # User interface function for stRat stat
+  ui <- navbarPage("stRat stat",
+                   navbarMenu("Digitize stratigraphic data",
 
-  # Define UI for application that draws a histogram
-  ui <- shiny::navbarPage("stRat stat",
-                   shiny::navbarMenu("Digitize stratigraphic data",
                               ##################################################################
                               #First panel for Loading and Saving Data
                               ##################################################################
-                              shiny::tabPanel("1. Save/Load Data" ,
-                                       shiny::sidebarLayout(
-                                         shiny::sidebarPanel(width = 3,
-                                                      shiny::h4("Save Data"),
-                                                      shiny::h6("To save inputs prior to processing: save then download the file"),
-                                                      shiny::actionButton("save_data", "Compile save file"),
-                                                      shiny::downloadButton("downloadSaveData", "Download save file"),
-                                                      shiny::hr(),
-                                                      shiny::h4("Load Data"),
-                                                      shiny::h6("To load points prior to processing: select file then click load data"),
-                                                      shiny::fileInput("load_data_file", "Choose .csv save file"),
-                                                      shiny::actionButton("load_data", "Load Data")
+                              tabPanel("1. Save/Load Data" ,
+                                       sidebarLayout(
+                                         sidebarPanel(width = 3,
+                                                      h4("Save Data"),
+                                                      h6("To save inputs prior to processing: save then download the file"),
+                                                      actionButton("save_data", "Compile save file"),
+                                                      downloadButton("downloadSaveData", "Download save file"),
+                                                      hr(),
+                                                      h4("Load Data"),
+                                                      h6("To load points prior to processing: select file then click load data"),
+                                                      fileInput("load_data_file", "Choose .csv save file"),
+                                                      actionButton("load_data", "Load Data")
                                          ), # end sidebarPanel
-                                         shiny::mainPanel(
-                                           shiny::p("Welcome to stRat stat, an R-based digitizer that converts drawn stratigraphic sections/core logs to a numeric format. Please refer to the GitHub repository and reference the documentation on the use of stRat stat."),
-                                           shiny::p("GitHub repo: https://github.com/ActiveMargins/stRatstat")
+                                         mainPanel(
+                                           p("Welcome to stRat stat, an R-based digitizer that converts drawn stratigraphic sections/core logs to a numeric format. Please refer to the GitHub repository and reference the documentation on the use of stRat stat."),
+                                           p("GitHub repo: https://github.com/ActiveMargins/stRatstat")
                                          ) # end main panel
                                        ) #end sidebarLayout
                               ), #end first panel
@@ -42,17 +37,17 @@ launchstRatstat <- function(){
                               ##################################################################
                               #Second panel for digitizing data
                               ##################################################################
-                              shiny::tabPanel("2. Digitize beds and grain sizes",
-                                       shiny::sidebarLayout(
-                                         shiny::sidebarPanel( width = 2,
-                                                       shiny::fileInput(inputId = 'files',
+                              tabPanel("2. Digitize beds and grain sizes",
+                                       sidebarLayout(
+                                         sidebarPanel( width = 2,
+                                                       fileInput(inputId = 'files',
                                                                  label = 'Select an Image',
                                                                  accept=c('image/png', 'image/jpeg')
                                                        ),
-                                                       shiny::hr(),
-                                                       shiny::numericInput("sectthick_top", "Top of section thickness", 1),
-                                                       shiny::numericInput("sectthick_base", "Base of section thickness", 0),
-                                                       shiny::hr(),
+                                                       hr(),
+                                                       numericInput("sectthick_top", "Top of section thickness", 1),
+                                                       numericInput("sectthick_base", "Base of section thickness", 0),
+                                                       hr(),
                                                        checkboxGroupInput("GS_checkGroup", label = h5("What Grain Sizes are in the section?"),
                                                                           choices = list("Mud" = 1,
                                                                                          "Silt" = 2,
@@ -71,10 +66,7 @@ launchstRatstat <- function(){
                                                                                    "Grain size divisions" = 2,
                                                                                    "Bed tops" = 3,
                                                                                    "Grain size profiles" = 4)),
-                                                       checkboxInput("recordpts",
-                                                                     "Record points ON/OFF",
-                                                                     value = FALSE,
-                                                                     width = NULL)
+                                                       checkboxInput("recordpts", "Record points ON/OFF", value = FALSE, width = NULL)
                                          ), # end of sidebarPanel
                                          mainPanel(
                                            fluidRow(
@@ -484,7 +476,7 @@ launchstRatstat <- function(){
         paste("SavedStratgraphicData", Sys.Date(), ".csv", sep="")
       },
       content = function(con) {
-        write.csv(SaveData$df, con, na = "")
+        write.csv(SaveData$df, con, na = "", row.names=FALSE)
       }
     )
 
@@ -492,12 +484,9 @@ launchstRatstat <- function(){
     observeEvent(input$load_data, {
 
       inFile <- input$load_data_file
+      LoadData <- read.csv(inFile$datapath, header=TRUE, stringsAsFactors=FALSE) #if there is a file we want to read the .csv
 
-      if(is.null(inFile)) { #if there is no inFile then alert the user and do nothing
-        print("NoFile")
-        showNotification("No File Loaded", type = "error")
-      } else {
-        LoadData <- read.csv(inFile$datapath, header=TRUE, stringsAsFactors=FALSE) #if there is a file we want to read the .csv
+      if(c("Save") %in% colnames(LoadData)) { #if there is no inFile then alert the user and do nothing
 
         #Parse/filter the logged points data in the load file into differentdataframes
         topbottompts_load <- LoadData %>% filter (Save=="TopBottom") %>% select(x,y,PtLabel) %>% filter (x>0)
@@ -509,11 +498,16 @@ launchstRatstat <- function(){
         element_load <- LoadData %>% filter(Save=="Elements") %>% select(ymin_raw, ymax_raw, ElementName, ElementBlockNum) %>% filter (ymin_raw>0)
         elementset_load <- LoadData %>% filter(Save=="ElementSets") %>% select(ymin_raw, ymax_raw, ElementSetName, ElementSetBlockNum) %>% filter (ymin_raw>0)
 
-        #Parse the columns that have the names of sedimentary structures, facies, etc. from the loaded data. These are single strins, so we treat them a bit differently so we can bind it into the reactive dataframe
+        #Parse the columns that have the names of sedimentary structures, facies, etc. from the loaded data. These are single strings, so we treat them a bit differently so we can bind it into the reactive dataframe. Also when we make the dataframe, it turns them into factors. So we need to turn them back into strings.
         sedstrat_name_load <- data.frame(name=unique(sedstrat_load$SedStruct))
         facies_name_load <- data.frame(name=unique(facies_load$FacName))
         element_name_load <- data.frame(name=unique(element_load$ElementName))
         elementset_name_load <- data.frame(name=unique(elementset_load$ElementSetName))
+
+        sedstrat_name_load[] <- lapply(sedstrat_name_load, as.character)
+        facies_name_load[] <- lapply(facies_name_load, as.character)
+        element_name_load[] <- lapply(element_name_load, as.character)
+        elementset_name_load[] <- lapply(elementset_name_load, as.character)
 
         #Bind each loading dataframe into a reactive dataframe that the rest of the software can recognize
         topbottom$df <- bind_rows(topbottom$df, topbottompts_load)
@@ -524,12 +518,17 @@ launchstRatstat <- function(){
         facies_raw$df <- bind_rows(facies_raw$df,facies_load)
         element_raw$df <- bind_rows(element_raw$df,element_load)
         elementset_raw$df <- bind_rows(elementset_raw$df,elementset_load)
-        sedstructnames$df <- bind_rows(sedstructnames$df,sedstrat_name_load)
+        sedstructnames$df <-  bind_rows(sedstructnames$df,sedstrat_name_load)
         faciesnames$df <- bind_rows(faciesnames$df,facies_name_load)
         elementnames$df <- bind_rows(elementnames$df,element_name_load)
         elementsetnames$df <- bind_rows(elementsetnames$df,elementset_name_load)
 
         showNotification("Data loaded successfully ", type = "message") #Send message to user
+
+
+      } else {
+        print("NoFile")
+        showNotification("No File Loaded", type = "error")
       }
     })
 
@@ -569,7 +568,7 @@ launchstRatstat <- function(){
           geom_label(data=bedtops_raw$df, aes(x=3, y=y, label=ifelse(x>1, as.character(pt),''))) #label the bed tops
       }
     },
-    cacheKeyExpr = { list(input$updateplot3,input$plot2_brush, input$delete_pt, input$delete_row) } #only update the right hand plot, when the left plto is brushed, a points are deleted, or the update button is pushed
+    cacheKeyExpr = {list(input$updateplot3,input$plot2_brush, input$delete_pt, input$delete_row)} #only update the right hand plot, when the left plto is brushed, a points are deleted, or the update button is pushed
     )
 
     # When a double-click happens on the left plot, check if there's a brush on the plot.
@@ -653,6 +652,7 @@ launchstRatstat <- function(){
         }
         if(input$pt_type == 2){
           gsmarkers$df <- gsmarkers$df[-(delete_row),]
+          gsmarkers$df <- gsmarkers$df %>% mutate(pt=row_number()-1)
         }
         if(input$pt_type == 3){
           bedtops_raw$df <- bedtops_raw$df[-(delete_row),]
@@ -726,12 +726,12 @@ launchstRatstat <- function(){
       }
     })
 
-    #Creating facies
+    #Creating sedimentary structure name
     observeEvent(input$create_sedstruct_name, {
       sedstructnames$df <- bind_rows(sedstructnames$df,tibble(name=input$sedstruct_text))
     })
 
-    #Delete facies from facies list
+    #Delete sedimentary structure name from sedimentary structure list
     observeEvent(input$delete_sedstruct_name, {
       if(nrow(sedstructnames$df)>1){
         sedstructnames$df <- sedstructnames$df[-nrow(sedstructnames$df),]
@@ -743,7 +743,7 @@ launchstRatstat <- function(){
       radioButtons("sedstruct_input", "Sedimentary Structures",choices = sedstructnames$df$name)
     })
 
-    #Table for logged data
+    #Table for logged sedimentary structure data
     output$sedstrattable <- DT::renderDT(
       datatable(filter(sedstrat_raw$df, ymin_raw>0), rownames=FALSE, filter=c('none'))
     )
@@ -866,7 +866,7 @@ launchstRatstat <- function(){
           }
         }
         #Now that we have the optimal position for our facies boundaries we'll bind them into the facies dataframe
-        facies_raw$df <- bind_rows(facies_raw$df,tibble(ymin_raw=brushymax,ymax_raw=brushymin, FacName=as.character(input$facies_input), FacBlockNum=nrow(facies_raw$df)+1))
+        facies_raw$df <- bind_rows(facies_raw$df,tibble(ymin_raw=brushymax,ymax_raw=brushymin, FacName=as.character(input$facies_input), FacBlockNum=nrow(facies_raw$df)-1))
       }
     })
 
@@ -882,6 +882,7 @@ launchstRatstat <- function(){
       if(!is.null(input$factable_rows_selected)){
         delete_row <- input$factable_rows_selected + 1
         facies_raw$df <- facies_raw$df[-(delete_row),]
+        facies_raw$df <- facies_raw$df %>% mutate(FacBlockNum=row_number()-1)
       }
     })
 
@@ -996,7 +997,7 @@ launchstRatstat <- function(){
           }
         }
         #Now that we have the optimal place for th element boundary we need to bind it into the new data
-        element_raw$df <- bind_rows(element_raw$df,tibble(ymin_raw=brushymax,ymax_raw=brushymin, ElementName=as.character(input$element_input), ElementBlockNum=nrow(element_raw$df)+1))
+        element_raw$df <- bind_rows(element_raw$df,tibble(ymin_raw=brushymax,ymax_raw=brushymin, ElementName=as.character(input$element_input), ElementBlockNum=nrow(element_raw$df)-1))
       }
     })
 
@@ -1012,6 +1013,7 @@ launchstRatstat <- function(){
       if(!is.null(input$elementtable_rows_selected)){
         delete_row <- input$elementtable_rows_selected + 1
         element_raw$df <- element_raw$df[-(delete_row),]
+        element_raw$df <- element_raw$df %>% mutate(ElementBlockNum=row_number()-1)
       }
     })
 
@@ -1119,7 +1121,7 @@ launchstRatstat <- function(){
           }
         }
         #Now we we have the best boundaires of our element set/interval figured out we can bind them into the existing element set dataframe
-        elementset_raw$df <- bind_rows(elementset_raw$df,tibble(ymin_raw=brushymax,ymax_raw=brushymin, ElementSetName=as.character(input$elementset_input), ElementSetBlockNum=nrow(elementset_raw$df)+1))
+        elementset_raw$df <- bind_rows(elementset_raw$df,tibble(ymin_raw=brushymax,ymax_raw=brushymin, ElementSetName=as.character(input$elementset_input), ElementSetBlockNum=nrow(elementset_raw$df)-1))
       }
     })
 
@@ -1135,6 +1137,7 @@ launchstRatstat <- function(){
       if(!is.null(input$elementsettable_rows_selected)){
         delete_row <- input$elementsettable_rows_selected + 1
         elementset_raw$df <- elementset_raw$df[-(delete_row),]
+        elementset_raw$df <- elementset_raw$df %>% mutate(ElementSetBlockNum=row_number()-1)
       }
     })
 
@@ -1321,13 +1324,13 @@ launchstRatstat <- function(){
       ####Process the Facies data
       df.facies <- df.facies %>% mutate(ymin_thick = (round((fun.Thick(df.facies$ymax_raw))/StratInc)*StratInc), ymax_thick = round((fun.Thick(df.facies$ymin_raw))/StratInc)*StratInc)
 
-      if(nrow(df.facies)>0){#If the df.facies has any logged data inside it then processes it
+      if(nrow(df.facies)>0){ #If the df.facies has any logged data inside it then processes it
         SectData$Facies <- rep(NA,nrow(SectData))
         SectData$FaciesBlockNum <- rep(NA,nrow(SectData))
 
         #Increment through the facies dataframe and if else each row. Try to get the ifelse to not replace the cells if it fails the test.
         for (i in 1:nrow(df.facies)){
-          faciesmin_y <- as.numeric(df.facies[i,5]) ## Do as numeric ahead outside of the for loop
+          faciesmin_y <- as.numeric(df.facies[i,5]) ## Set the minimum and maximum y-location (from the brush) to variables
           faciesmax_y <- as.numeric(df.facies[i,6])
 
           SectData$Facies <-  ifelse(SectData$Thickness>faciesmin_y & SectData$Thickness<=faciesmax_y, df.facies[i,3], SectData$Facies)
@@ -1341,7 +1344,7 @@ launchstRatstat <- function(){
       }#End if(nrow(df.facies)>0)
 
       ####Process the Element data
-      df.element <- df.element %>% mutate(ymin_thick = (round((fun.Thick(df.element$ymax_raw))/StratInc)*StratInc)+StratInc, ymax_thick = round((fun.Thick(df.element$ymin_raw))/StratInc)*StratInc)
+      df.element <- df.element %>% mutate(ymin_thick = (round((fun.Thick(df.element$ymax_raw))/StratInc)*StratInc), ymax_thick = round((fun.Thick(df.element$ymin_raw))/StratInc)*StratInc)
 
       if(nrow(df.element)>0){ #If df.element has any recorded intervals in it, then process it
         SectData$Element <- rep(NA,nrow(SectData))
@@ -1408,7 +1411,7 @@ launchstRatstat <- function(){
       if(input$ElementStats==TRUE & nrow(df.element)>0){ #Same as above
         df_elementsummarize <- SectData %>%
           dplyr::group_by(ElementBlockNum) %>%
-          dplyr::summarise(Thickness = max(Thickness), ElementThick=n()*(StratInc), ElementMeanGS = mean(GS, na.rm=TRUE, ElementNetGross=sum(Reservoir)/n())) %>%
+          dplyr::summarise(Thickness = max(Thickness), ElementThick=n()*(StratInc), ElementMeanGS = mean(GS, na.rm=TRUE), ElementNetGross=sum(Reservoir)/n()) %>%
           select(-ElementBlockNum)
         SectData <- left_join(SectData,df_elementsummarize,by = "Thickness")
         print("Element Statistics Run")
@@ -1426,7 +1429,7 @@ launchstRatstat <- function(){
 
       ####Bind the SectData back into a reactive dataframe so it can be downloaded and drop the first row of it
       SectDataProcessed$df <-  bind_rows(SectDataProcessed$df,SectData)
-      SectDataProcessed$df <-  SectDataProcessed$df[-1,]
+      SectDataProcessed$df <-  SectDataProcessed$df[-(1:2),]
 
       #Send notifications
       showNotification("Process Complete - Input stratigraphic data has been digitized", type = "message")
@@ -1440,7 +1443,7 @@ launchstRatstat <- function(){
         paste("ProcessedStratgraphicData", Sys.Date(), ".csv", sep="")
       },
       content = function(con) {
-        write.csv(SectDataProcessed$df, con, na = "")
+        write.csv(SectDataProcessed$df, con, na = "", row.names=FALSE)
       }
     )
 
@@ -1650,7 +1653,7 @@ launchstRatstat <- function(){
         paste('MergedStratigraphicData-', Sys.Date(), '.csv', sep='')
       },
       content = function(con) {
-        write.csv(SectDataJoined_Disc$df, con, na = "")
+        write.csv(SectDataJoined_Disc$df, con, na = "", row.names=FALSE)
       }
     ) #end of download
 
@@ -1933,7 +1936,7 @@ launchstRatstat <- function(){
         paste('MergedStratigraphicData-', Sys.Date(), '.csv', sep='')
       },
       content = function(con) {
-        write.csv(SectDataJoined_Cont$df, con, na = "")
+        write.csv(SectDataJoined_Cont$df, con, na = "", row.names=FALSE)
       }
     ) #end of download
 
@@ -1968,7 +1971,7 @@ launchstRatstat <- function(){
         paste('MergedStratigraphicData-', Sys.Date(), '.csv', sep='')
       },
       content = function(con) {
-        write.csv(TotalSectionData$df, con, na = "")
+        write.csv(TotalSectionData$df, con, na = "", row.names=FALSE)
       }
     ) #end of download
   }
