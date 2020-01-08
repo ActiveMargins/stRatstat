@@ -28,6 +28,8 @@ Stratigraphic section data are a highly variable type of data. The axes on strai
 
 Grain size divisions that are picked along the x-axis of the stratigraphic section are used to interpolate the grain size profile of the section. Grain size divisions can increase in value to either the right or left, depending on personal preference. In any case the grain size division points should be pick in the increasing value of grain size. Grain size profile points that are picked beyond (i.e., left or right of) the range of input grain size divisions, will be given the value of the closest division.
 
+<img src="images/GSInterpolation_Inputs.jpg" width="350">
+
 #### Grain size interpolation through bed boundaries
 
 The main algorithm of stRat stat interpolates the grain size infromation, based on input user points, for each discretized interval within the stratigraphic section. The algorithm used here first interpolates the grain size value of each point within the grain size profile to provide a value for each cell, but then cycles through each bed and checks the number of grain size points within each bed.
