@@ -35,7 +35,9 @@ The main algorithm of stRat stat interpolates the grain size infromation, based 
 - If there is a single grain size profile point within the bed,  the grain size of the single point will be used for all discretized intervals within the bed.
 - If two or more grain size profile points are located within the bed, the interpolated grain size profile will be used, except discritized intervals below the lowest point and intervals above the highest point will be given uniform grain size values.
 
-It was found that this approach allows for realistic bed fining or coarsening profiles to be input, as well as speed up the process of inputing points, as a single point can be used for uniform grain size profiles.
+<img src="images/GSInterpolation_Comparision.jpg">
+
+This approach allows for realistic bed fining or coarsening profiles to be input, as well as speed up the process of inputing points, as a single point can be used for uniform grain size profiles.
 
 Grain size profile points that are picked in the first bed (i.e., below the first bed boundary) or in the last bed (i.e., above the last bed boundary) will use the interpolated grain size profile up until the end of the picked points and use a uniform grain size profile for all discritized intervals from the lowest grain size profile point to the base of the section, and from the highest grain size profile point to the top of the section.
 
@@ -131,7 +133,7 @@ To use this validation dataset:
 - Felletti, F., 2004. Spatial variability of Hurst statistics in the Castagnola Formation, Tertiary Piedmont Basin, NW Italy: discrimination of sub-environments in a confined turbidite system. In: Lomas, S.A., Joseph, P. (Eds.), Confined Turbidite Systems. v. 222. Geological Society of London, p. 285–305 Special Publications.
 - **Felletti, F., Bersezio, R., 2010. Validation of Hurst statistics: a predictive tool to discriminate turbiditic sub-environments in a confined basin: Petroleum Geoscience, v.16, p.401–412.**
 - Kötelešová, S., 2012. Facies clustering in deep-water successions of the Magura zone of the Outer Western Carpathians: implications for interpretation of submarine-fan environments: Facies, v.58, p.217–227.
-- ** Malinverno, A., 1997, On the power law size distribution of turbidite beds. Basin Research, v.9, p.263–274.**
+- **Malinverno, A., 1997, On the power law size distribution of turbidite beds. Basin Research, v.9, p.263–274.**
 - Mattern, F., 2002, Amalgamation surfaces, bed thicknesses, and dish structures in sandrich submarine fans: numeric differences in channelized and unchannelized deposits and their diagnostic value: Sedimentary Geology, v.150, p.203–228.
 - Mukhopadhyay, B., Chakraborty, P.P., Paul, S., 2003, Facies clustering in turbidite successions: case study from andaman flysch group, andaman islands, India. Gondwana Research, v.6, p.918–925.
 - Pantopoulos, G., Vakalas, I., Maravelis, A., Zelilidis, A., 2013, Statistical analysis of turbidite bed thickness patterns from the Alpine fold and thrust belt of western and southeastern Greece: Sedimentary Geology, v.294, p.37–57.
