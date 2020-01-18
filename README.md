@@ -64,24 +64,24 @@ To use this validation dataset:
 6.	The first 10 grain sizes should be selected (i.e., check Mud through Cobble)
 7.	The extents of lithofacies, architectural element, and element set intervals can be viewed on their respective pages under the “Digitize stratigraphic data” drop down.
 8.	On the “7. Numeric Settings” page the inputs should be as follow:
--Mud/Clay Size = 1
--Silt Size = 2
--Very Fine Sand Size = 3
--Fine Sand Size = 4
--Medium Sand Size = 5
--Coarse Sand Size = 6
--Very Coarse Sand Size = 7
--Granule Size = 8
--Pebble Size = 9
--Cobble Size = 10
--Reservoir Grain Size Cutoff = 5.5
--Increment to discretize at = 0.01
+- Mud/Clay Size = 1
+- Silt Size = 2
+- Very Fine Sand Size = 3
+- Fine Sand Size = 4
+- Medium Sand Size = 5
+- Coarse Sand Size = 6
+- Very Coarse Sand Size = 7
+- Granule Size = 8
+- Pebble Size = 9
+- Cobble Size = 10
+- Reservoir Grain Size Cutoff = 5.5
+- Increment to discretize at = 0.01
 9.	On the final page “8. Process Digitized Data”
--Section/Core Name – any name can be given
--Section/Core Location – any name can be given
--UTM Easting – any value can be given
--UTM Northing – any value can be given
--Statistics should be run at all hierarchical levels
+- Section/Core Name – any name can be given
+- Section/Core Location – any name can be given
+- UTM Easting – any value can be given
+- UTM Northing – any value can be given
+- Statistics should be run at all hierarchical levels
 10.	Click  "Process selected points" – If message boxes appear in the bottom right, the process was successful with all the input points. If the app turns grey then the process failed with the given points, and the inputs should be check and the process re-run.
 11.	Download the .csv file using the “Download Processed Data” button.
 12.	Inspect the results
