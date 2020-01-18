@@ -8,8 +8,8 @@ Stratigraphic sections are employed in both academic and applied fields of sedim
 
 <img src="images/stRatstat_graphic2.jpg">
 
-- An online version of stRat stat is [hosted on shinyapps.io](https://activemargins.shinyapps.io/stRat_stat/ "hosted on shinyapps.io")
-- For a full description of the stRat stat software, see the user manual within the [GitHub repository](https://github.com/ActiveMargins/stRatstat "GitHub repository").
+- An online version of stRat stat is [hosted on shinyapps.io](https://activemargins.shinyapps.io/stRat_stat/ "hosted on shinyapps.io").
+- For a full description of the stRat stat software, see the user manual within the [GitHub repository](https://github.com/ActiveMargins/stRatstat/tree/master/SampleDataset "GitHub repository").
 - For examples of workflows that have leveraged bed-scale and facies-scale data similar to what stRat stat produces, see the list of publications below.
 ## Installation
 
