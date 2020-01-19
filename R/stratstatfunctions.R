@@ -446,6 +446,9 @@ launchstRatstat <- function(){
     ############################################################################################################
     #Saving the data
     observeEvent(input$save_data,{
+      #Remove all data currently in the SaveData$df so users can't save multiple copies of the same data to one dataframe.
+      SaveData$df <- SaveData$df[1,]
+      
       #convert all the reactive dataframes in their current state into static dataframes with a new column that says their function
       topbottompts <- topbottom$df
       bedtops_raw <- bedtops_raw$df
@@ -488,6 +491,20 @@ launchstRatstat <- function(){
 
       if(c("Save") %in% colnames(LoadData)) { #if there is no inFile then alert the user and do nothing
 
+        #Get rid of anything already in reactive dataframes. This stops the user from loading in multiple datasets into stRat stat, it will only keep the most recently loaded data
+        topbottom$df <- topbottom$df %>% filter(x<0)
+        bedtops_raw$df <- bedtops_raw$df %>% filter(x<0)
+        values$df <- values$df %>% filter(x<0)
+        gsmarkers$df <- gsmarkers$df %>% filter(x<0)
+        sedstrat_raw$df <- sedstrat_raw$df %>% filter(ymin_raw>0)
+        facies_raw$df <- facies_raw$df %>% filter(ymin_raw>0)
+        element_raw$df <- element_raw$df %>% filter(ymin_raw>0)
+        elementset_raw$df <- elementset_raw$df %>% filter(ymin_raw>0)
+        sedstructnames$df <- sedstructnames$df %>% filter(name=="Example Sed. Structure")
+        faciesnames$df <- faciesnames$df %>% filter(name=="Example Facies")
+        elementnames$df <- elementnames$df %>% filter(name=="Example Element")
+        elementsetnames$df <- elementsetnames$df %>% filter(name=="Example Element Set")
+        
         #Parse/filter the logged points data in the load file into differentdataframes
         topbottompts_load <- LoadData %>% filter (Save=="TopBottom") %>% select(x,y,PtLabel) %>% filter (x>0)
         bedtops_load <- LoadData %>% filter(Save=="BedTops") %>% select(x, y, pt, BedTop) %>% filter (x>0)
@@ -524,7 +541,6 @@ launchstRatstat <- function(){
         elementsetnames$df <- bind_rows(elementsetnames$df,elementset_name_load)
 
         showNotification("Data loaded successfully ", type = "message") #Send message to user
-
 
       } else {
         print("NoFile")
