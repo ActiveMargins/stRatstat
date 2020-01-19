@@ -8,11 +8,11 @@ tags:
 - reservoir modeling
 authors:
 - name: Daniel S. Coutts
-- orcid: 0000-0002-2345-2865
-- affiliation: 1
+  orcid: 0000-0002-2345-2865
+  affiliation: 1
 affiliations:
 - Name: Department of Geoscience, University of Calgary
-Index: 1
+  index: 1
 date: 12 January 2020
 bibliography: paper.bib
 ---
