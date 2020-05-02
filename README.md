@@ -46,6 +46,29 @@ This approach allows for realistic bed fining or coarsening profiles to be input
 
 Grain size profile points that are picked in the first bed (i.e., below the first bed boundary) or in the last bed (i.e., above the last bed boundary) will use the interpolated grain size profile up until the end of the picked points and use a uniform grain size profile for all discritized intervals from the lowest grain size profile point to the base of the section, and from the highest grain size profile point to the top of the section.
 
+## Troubleshooting
+
+### Image Size in stRat stat and how to resize easily in R
+stRat stat can only handle small <1 MB images. If images are too large to for stRat stat to handle efficiently, the [Imager package](https://dahtah.github.io/imager/imager.html "Imager package") can be used to resize .jpg and .png files easily in R. A simple workflow for this is below:
+
+Imager install
+```
+install.packages(“imager”)
+library(imager)
+```
+
+Load, resize, and save the image
+```
+#if you already have the full path to the file you want to load just run:
+im <- load.image("/somedirectory/myfile.png")
+
+#negative arguemnts in resize() resize to the image to that percentage of the the original
+im_resized <- resize(parrots,-10,-10) # here we would resize to 10% of the original
+
+#Save image. The file extension controls file format.
+save.image(im_resize, "Resized.jpg")
+```
+
 ## Algorithm Validation
 A validation dataset was created to demonstrate how the algorithm translates individual points picked on an image to numerical values representative of the stratigraphic section data. The validation dataset consists of points picked on a grid-like image. This dataset was designed to produce intuative results. Within the GitHub repository folder “ValidationDataset", there is:
 - ValidationDataset_Image.png – image of the dataset that can be used to validate the algorithm. The image demonstrates the location of points picked load file.
