@@ -59,11 +59,11 @@ library(imager)
 
 Load, resize, and save the image
 ```
-#if you already have the full path to the file you want to load just run:
+#Load image into R. Use path to the file you want to load:
 im <- load.image("/somedirectory/myfile.png")
 
-#negative arguemnts in resize() resize to the image to that percentage of the the original
-im_resized <- resize(parrots,-10,-10) # here we would resize to 10% of the original
+#Resize. Negative arguemnts in resize() function resize to the image to that percentage of the the original
+im_resized <- resize(im,-10,-10) # here we would resize to 10% of the original
 
 #Save image. The file extension controls file format.
 save.image(im_resize, "Resized.jpg")
