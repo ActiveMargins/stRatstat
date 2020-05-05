@@ -492,14 +492,11 @@ server <- function(input, output) {
   observeEvent(input$load_data, {
     
     inFile <- input$load_data_file
-    
     if (is.null(inFile))
       return(showNotification("No file selected. No file loaded", type = "error"))
     
     LoadData <- read.csv(inFile$datapath, header=TRUE, stringsAsFactors=FALSE) #if there is a file we want to read the .csv
-    
-    if(c("Save") %in% colnames(LoadData)) { #if there is no inFile then alert the user and do nothing
-      
+    if(c("Save") %in% colnames(LoadData)) { #if there is no inFile then alert the user and do nothing 
       #Get rid of anything already in reactive dataframes. This stops the user from loading in multiple datasets into stRat stat, it will only keep the most recently loaded data
       topbottom$df <- topbottom$df %>% filter(x<0)
       bedtops_raw$df <- bedtops_raw$df %>% filter(x<0)
@@ -529,7 +526,6 @@ server <- function(input, output) {
       facies_name_load <- data.frame(name=unique(facies_load$FacName))
       element_name_load <- data.frame(name=unique(element_load$ElementName))
       elementset_name_load <- data.frame(name=unique(elementset_load$ElementSetName))
-      
       sedstrat_name_load[] <- lapply(sedstrat_name_load, as.character)
       facies_name_load[] <- lapply(facies_name_load, as.character)
       element_name_load[] <- lapply(element_name_load, as.character)
@@ -611,7 +607,6 @@ server <- function(input, output) {
   #observe clicks on the right plot to get xy coordinates - only keep them if(recordpts == TRUE)
   observeEvent(input$plotclick,{
     if(input$recordpts == TRUE){
-      
       if(input$pt_type == 1){ #sort the point by radio button input$pt_type
         if(nrow(topbottom$df)==1) {
           topbottom$df <- bind_rows(topbottom$df,tibble(x=input$plotclick$x, y=input$plotclick$y, PtLabel="Bottom")) #once sorted, bind_rows into the dataframe
@@ -625,11 +620,9 @@ server <- function(input, output) {
       if(input$pt_type == 2){
         gsmarkers$df <- bind_rows(gsmarkers$df,tibble(x=input$plotclick$x, y=input$plotclick$y, pt=nrow(gsmarkers$df)+1))
       }
-      
       if(input$pt_type == 3){
         bedtops_raw$df <- bind_rows(bedtops_raw$df,tibble(x=input$plotclick$x, y=input$plotclick$y, pt=nrow(bedtops_raw$df), BedTop=as.numeric(1)))
       }
-      
       if(input$pt_type == 4){
         values$df <- bind_rows(values$df,tibble(x=input$plotclick$x, y=input$plotclick$y, pt=(nrow(values$df))))
       }
@@ -653,15 +646,12 @@ server <- function(input, output) {
     if(input$pt_type == 1 & nrow(topbottom$df)>1){
       topbottom$df <- topbottom$df[-nrow(topbottom$df),]
     }
-    
     if(input$pt_type == 2 & nrow(gsmarkers$df)>1){
       gsmarkers$df <- gsmarkers$df[-nrow(gsmarkers$df),]
     }
-    
     if(input$pt_type == 3 & nrow(bedtops_raw$df)>1){
       bedtops_raw$df <- bedtops_raw$df[-nrow(bedtops_raw$df),]
     }
-    
     if(input$pt_type == 4 & nrow(values$df)>1){
       values$df <- values$df[-nrow(values$df),]
     }
@@ -724,8 +714,6 @@ server <- function(input, output) {
     if (!is.null(plot4brush)) {
       ranges2_sed$x <- c(plot4brush$xmin, plot4brush$xmax)
       ranges2_sed$y <- c(plot4brush$ymin, plot4brush$ymax)
-      
-      
     } else {
       ranges2_sed$x <- null$df$nullx
       ranges2_sed$y <- null$dfnully
@@ -740,15 +728,12 @@ server <- function(input, output) {
       #if the brushes are outside of the limits of the section then clip them back to the top or bottom of the image
       plot5brush <- input$plot5_brush
       topbottompts <- topbottom$df %>% filter(y>0)
-      
       if(plot5brush$ymax[1]>(max(topbottompts$y))){
         plot5brush$ymax[1] <-(max(topbottompts$y))
       }
-      
       if(plot5brush$ymin[1]<(min(topbottompts$y))){
         plot5brush$ymin[1] <-(min(topbottompts$y))
       }
-      
       sedstrat_raw$df <- bind_rows(sedstrat_raw$df,tibble(ymin_raw=plot5brush$ymax,ymax_raw=plot5brush$ymin, SedStruct=input$sedstruct_input))
     }
   })
@@ -825,7 +810,6 @@ server <- function(input, output) {
     if (!is.null(plot6brush)) {
       ranges2_fac$x <- c(plot6brush$xmin, plot6brush$xmax)
       ranges2_fac$y <- c(plot6brush$ymin, plot6brush$ymax)
-      
     } else {
       ranges2_fac$x <- null$df$nullx
       ranges2_fac$y <- null$df$nully
@@ -850,7 +834,7 @@ server <- function(input, output) {
   })
   
   #Table for logged facies data
-  output$factable <- renderDataTable(
+  output$factable <- DT::renderDT(
     datatable(filter(facies_raw$df, ymin_raw>0), rownames=FALSE, filter=c('none'))
   )
   
@@ -930,7 +914,7 @@ server <- function(input, output) {
     }
   })
   
-  output$plot9 <- renderPlot({
+  output$plot9 <- DT::renderDT({
     if(is.null(input$files)){} # if there's no file input don't plot anything
     else{ # if there is a file input then plot the interactive ggplot
       ggplot(data=null$df, aes(x=nullx,y=nully))+
@@ -1062,7 +1046,7 @@ server <- function(input, output) {
     }
   })
   
-  output$plot11 <- renderPlot({
+  output$plot11 <- DT::renderDT({
     if(is.null(input$files)){} # if there's no file input don't plot anything
     else{ # if there is a file input then plot the interactive ggplot
       ggplot(data=null$df, aes(x=nullx,y=nully))+
@@ -1106,7 +1090,7 @@ server <- function(input, output) {
   })
   
   #Table for logged element set data
-  output$elementsettable <- renderDataTable(
+  output$elementsettable <- DT::renderDT(
     datatable(filter(elementset_raw$df, ymin_raw>0), rownames=FALSE, filter=c('none'))
   )
   
