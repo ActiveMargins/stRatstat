@@ -48,8 +48,8 @@ Grain size profile points that are picked in the first bed (i.e., below the firs
 
 ## Troubleshooting
 
-### Image Size in stRat stat and how to resize easily in R
-stRat stat can only handle small <1 MB images. If images are too large to for stRat stat to handle efficiently, the [Imager package](https://dahtah.github.io/imager/imager.html "Imager package") can be used to resize .jpg and .png files easily in R. A simple workflow for this is below:
+### Image size limitations in stRat stat and how to resize images in R
+stRat stat can only handle small <1 MB images. Images in .png have been found to work better compared to .jpeg. Even though .jpeg often save to smaller file sizes, the lossy compression is apparent when working with images with stRat stat. The lossless compression of .png is helpful. If images are too large to for stRat stat to handle efficiently, the [Imager package](https://dahtah.github.io/imager/imager.html "Imager package") can be used to resize .jpg and .png files easily in R. A simple workflow for this is below:
 
 Imager install
 ```
@@ -57,13 +57,13 @@ install.packages(“imager”)
 library(imager)
 ```
 
-Load, resize, and save the image
+Load, resize, and save the image. Imager natively suppots .jpeg, .png, .tiff, and .bmp file formats. An example of resizing a .png and saving it to .jpg is shown here: 
 ```
 #Load image into R. Use path to the file you want to load:
 im <- load.image("/somedirectory/myfile.png")
 
-#Resize. Negative arguemnts in resize() function resize to the image to that percentage of the the original
-im_resized <- resize(im,-10,-10) # here we would resize to 10% of the original
+#Resize the image. Negative arguemnts in the resize() function resizes to the image to that percentage of the the original
+im_resized <- resize(im,-10,-10) # here we would resize to 10% of the original.
 
 #Save image. The file extension controls file format.
 save.image(im_resize, "Resized.jpg")
@@ -170,4 +170,3 @@ To use this validation dataset:
 - Sinclair, H.D., Cowie, P.A., 2003, Basin-floor topography and the scaling of turbidites. The Journal of Geology. v.111, p.277–299.
 - **Sylvester, Z., 2007, Turbidite bed thickness distributions: methods and pitfalls of analysis and modelling. Sedimentology, v.54, p.847–870.**
 - Talling, P.J., 2001, On the frequency distribution of turbidite thickness; Sedimentology: v.48, p.1297–1331.
-
