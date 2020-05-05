@@ -9,391 +9,395 @@ launchstRatstat <- function(){
 
   # User interface function for stRat stat
   ui <- navbarPage("stRat stat",
-                   navbarMenu("Digitize stratigraphic data",
+    navbarMenu("Digitize stratigraphic data",
 
-                              ##################################################################
-                              #First panel for Loading and Saving Data
-                              ##################################################################
-                              tabPanel("1. Save/Load Data" ,
-                                       sidebarLayout(
-                                         sidebarPanel(width = 3,
-                                                      h4("Save Data"),
-                                                      h6("To save inputs prior to processing: save then download the file"),
-                                                      actionButton("save_data", "Compile save file"),
-                                                      downloadButton("downloadSaveData", "Download save file"),
-                                                      hr(),
-                                                      h4("Load Data"),
-                                                      h6("To load points prior to processing: select file then click load data"),
-                                                      fileInput("load_data_file", "Choose .csv save file"),
-                                                      actionButton("load_data", "Load Data")
-                                         ), # end sidebarPanel
-                                         mainPanel(
-                                           p("Welcome to stRat stat, an R-based digitizer that converts drawn stratigraphic sections/core logs to a numeric format. Please refer to the GitHub repository and reference the documentation on the use of stRat stat."),
-                                           p("GitHub repo: https://github.com/ActiveMargins/stRatstat")
-                                         ) # end main panel
-                                       ) #end sidebarLayout
-                              ), #end first panel
+      ##################################################################
+      #First panel for Loading and Saving Data
+      ##################################################################
+      tabPanel("1. Save/Load Data" ,
+        sidebarLayout(
+          sidebarPanel(width = 3,
+            h4("Save Data"),
+            h6("To save inputs prior to processing: save then download the file"),
+            actionButton("save_data", "Compile save file"),
+            downloadButton("downloadSaveData", "Download save file"),
+            hr(),
+            h4("Load Data"),
+            h6("To load points prior to processing: select file then click load data"),
+            fileInput("load_data_file", "Choose .csv save file"),
+            actionButton("load_data", "Load Data")
+          ), # end sidebarPanel
+          mainPanel(
+            p("Welcome to stRat stat, an R-based digitizer that converts drawn stratigraphic sections/core logs to a numeric format."),
+            p("Please refer to the GitHub repository for documentation and example datasets"),
+            p("GitHub repo: https://github.com/ActiveMargins/stRatstat")
+          ) # end main panel
+        ) #end sidebarLayout
+      ), #end first panel
 
-                              ##################################################################
-                              #Second panel for digitizing data
-                              ##################################################################
-                              tabPanel("2. Digitize beds and grain sizes",
-                                       sidebarLayout(
-                                         sidebarPanel( width = 2,
-                                                       fileInput(inputId = 'files',
-                                                                 label = 'Select an Image',
-                                                                 accept=c('image/png', 'image/jpeg')
-                                                       ),
-                                                       hr(),
-                                                       numericInput("sectthick_top", "Top of section thickness", 1),
-                                                       numericInput("sectthick_base", "Base of section thickness", 0),
-                                                       hr(),
-                                                       checkboxGroupInput("GS_checkGroup", label = h5("What Grain Sizes are in the section?"),
-                                                                          choices = list("Mud" = 1,
-                                                                                         "Silt" = 2,
-                                                                                         "Very fine sand" = 3,
-                                                                                         "Fine sand" = 4,
-                                                                                         "Medium sand" = 5,
-                                                                                         "Coarse sand" = 6,
-                                                                                         "Very coarse sand" = 7,
-                                                                                         "Granule" = 8,
-                                                                                         "Pebble" = 9,
-                                                                                         "Cobble" = 10,
-                                                                                         "Boulder" = 11)),
-                                                       hr(),
-                                                       radioButtons("pt_type", "Types of points to record:",
-                                                                    choices = list("Bottom and top of section" = 1,
-                                                                                   "Grain size divisions" = 2,
-                                                                                   "Bed tops" = 3,
-                                                                                   "Grain size profiles" = 4)),
-                                                       checkboxInput("recordpts", "Record points ON/OFF", value = FALSE, width = NULL)
-                                         ), # end of sidebarPanel
-                                         mainPanel(
-                                           fluidRow(
-                                             column(width = 12, height = 500,
-                                                    h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
-                                                    fluidRow(
-                                                      column(width = 5,
-                                                             plotOutput("plot2", height = 500,
-                                                                        brush = brushOpts(
-                                                                          id = "plot2_brush",
-                                                                          resetOnNew = TRUE)
-                                                             )
-                                                      ), # end of column
-                                                      column(width = 5, height = 500, plotOutput("plot3", height = 500, click="plotclick")
-                                                      ) # end of column
-                                                    ) # end of fluidRow
-                                             ) #end column
-                                           ), #end fluid row
+      ##################################################################
+      #Second panel for digitizing data
+      ##################################################################
+      tabPanel("2. Digitize beds and grain sizes",
+        sidebarLayout(
+          sidebarPanel( width = 2,
+            fileInput(inputId = 'files',
+              label = 'Select an Image',
+              accept=c('image/png', 'image/jpeg')
+            ),
+            hr(),
+            numericInput("sectthick_top", "Top of section thickness", 1),
+            numericInput("sectthick_base", "Base of section thickness", 0),
+            hr(),
+            checkboxGroupInput("GS_checkGroup", label = h5("What grain sizes divisions are included in the section?"),
+              choices = list("Mud" = 1,
+                             "Silt" = 2,
+                             "Very fine sand" = 3,
+                             "Fine sand" = 4,
+                             "Medium sand" = 5,
+                             "Coarse sand" = 6,
+                             "Very coarse sand" = 7,
+                             "Granule" = 8,
+                             "Pebble" = 9,
+                             "Cobble" = 10,
+                             "Boulder" = 11)),
+              hr(),
+              radioButtons("pt_type", "Types of points to record:",
+                choices = list("Bottom and top of section (picked bottom then top)" = 1,
+                               "Grain size divisions (picked finest to coarsest)" = 2,
+                               "Bed tops" = 3,
+                               "Grain size profile" = 4)),
+                               checkboxInput("recordpts", "Record points ON/OFF", value = FALSE, width = NULL)
+          ), # end of sidebarPanel
+          mainPanel(
+            fluidRow(
+              column(width = 12, height = 500,
+                h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
+                fluidRow(
+                  column(width = 5,
+                    plotOutput("plot2", height = 500,
+                                brush = brushOpts(
+                                  id = "plot2_brush",
+                                  resetOnNew = TRUE)
+                    )
+                  ), # end of column
+                  column(width = 5, height = 500, plotOutput("plot3", height = 500, click="plotclick")
+                  ) # end of column
+                ) # end of fluidRow
+              ) #end column
+            ), #end fluid row
 
-                                           fluidRow(
-                                             actionButton("delete_pt", "Delete last point"),
-                                             actionButton("delete_row", "Delete selected row(s) in table"),
-                                             actionButton("updateplot3","UpdatePlot"),
-                                             hr(),
-                                             DT::dataTableOutput('pttable')
-                                           ) #end fluid row
-                                         ) #end mainPanel
-                                       ) #end sidebarLayout
-                              ), #end tabPanel
+            fluidRow(
+              actionButton("delete_pt", "Delete last point"),
+              actionButton("delete_row", "Delete selected row(s) in table"),
+              actionButton("updateplot3","UpdatePlot"),
+              hr(),
+              dataTableOutput('pttable')
+            ) #end fluid row
+          ) #end mainPanel
+        ) #end sidebarLayout
+      ), #end tabPanel
 
-                              ##################################################################
-                              #Second panel for digitizing sedimentary structures
-                              ##################################################################
-                              tabPanel("3. Digitize sedimentary structures and features",
-                                       sidebarLayout(
-                                         sidebarPanel(width = 4,
-                                                      textInput("sedstruct_text", "Sedimentary structure name", value = "(e.g., ripple cross lamination)"), #text input for the name of the sedimentary structure
-                                                      actionButton("create_sedstruct_name", "Create sedimentary structure category"), #button to create the sedimentary structure category
-                                                      actionButton("delete_sedstruct_name", "Delete sedimentary structure category"), #button to delete the last created sedimentary structure category
-                                                      uiOutput("sedstructchoices"), #dynamic radio button list of created sedimentary structures
-                                                      actionButton("rec_sed_brush", "Record sedimentary structure interval") #button to log/record the brushed
-                                         ), #end of sidebarPanel
-                                         mainPanel(
-                                           fluidRow(
-                                             column(width = 12, height = 500,
-                                                    h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
-                                                    fluidRow(
-                                                      column(width = 5, height = 500,
-                                                             plotOutput("plot4", height= "500px", width = "100%",brush = brushOpts(id = "plot4_brush")) #plot to navigate (left)
-                                                      ),
-                                                      column(width = 5,height = 500,
-                                                             plotOutput("plot5", height= "500px", width = "100%", brush = brushOpts(id = "plot5_brush")) #plot to brush selected interval (right)
-                                                      )
-                                                    ) # end of fluidRow
-                                             ) # end of column
-                                           ), # end of fluidRow
-                                           fluidRow(
-                                             actionButton("delete_pt_sed", "Delete last interval"), #button to delete last logged sedimentary structure interval
-                                             actionButton("delete_row_sed", "Delete selected row(s) in table"), #button to delete all selected rows in the table
-                                             hr(),
-                                             DT::dataTableOutput('sedstrattable') #table to display the logged sedimentary structure data
-                                           ) #end fluid row
-                                         ) # end of main panel
-                                       ) # end of sidebarLayout
-                              ), # end of tabPanel
+      ##################################################################
+      #Second panel for digitizing sedimentary structures
+      ##################################################################
+      tabPanel("3. Digitize sedimentary structures and features",
+        sidebarLayout(
+          sidebarPanel(width = 4,
+            textInput("sedstruct_text", "Sedimentary structure name", value = "(e.g., ripple cross lamination)"), #text input for the name of the sedimentary structure
+            actionButton("create_sedstruct_name", "Create sedimentary structure category"), #button to create the sedimentary structure category
+            actionButton("delete_sedstruct_name", "Delete sedimentary structure category"), #button to delete the last created sedimentary structure category
+            uiOutput("sedstructchoices"), #dynamic radio button list of created sedimentary structures
+            actionButton("rec_sed_brush", "Record sedimentary structure interval") #button to log/record the brushed
+          ), #end of sidebarPanel
+          mainPanel(
+            fluidRow(
+              column(width = 12, height = 500,
+                h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
+                fluidRow(
+                  column(width = 5, height = 500,
+                    plotOutput("plot4", height= "500px", width = "100%",brush = brushOpts(id = "plot4_brush")) #plot to navigate (left)
+                  ),
+                  column(width = 5,height = 500,
+                    plotOutput("plot5", height= "500px", width = "100%", brush = brushOpts(id = "plot5_brush")) #plot to brush selected interval (right)
+                  )
+                ) # end of fluidRow
+              ) # end of column
+            ), # end of fluidRow
+            fluidRow(
+              actionButton("delete_pt_sed", "Delete last interval"), #button to delete last logged sedimentary structure interval
+              actionButton("delete_row_sed", "Delete selected row(s) in table"), #button to delete all selected rows in the table
+              hr(),
+              dataTableOutput('sedstrattable') #table to display the logged sedimentary structure data
+            ) #end fluid row
+          ) # end of main panel
+        ) # end of sidebarLayout
+      ), # end of tabPanel
 
-                              ##################################################################
-                              #Third panel for digitizing facies intervals
-                              ##################################################################
-                              tabPanel("4. Digitize lithofacies intervals",
-                                       sidebarLayout(
-                                         sidebarPanel(width = 4,
-                                                      textInput("facies_text", "Facies name", value = "(e.g., channel axis)"), #text input for the facies name
-                                                      actionButton("create_fac_name", "Create facies category"), #button to create the facies category
-                                                      actionButton("delete_fac_name", "Delete facies category"), #button to delete the last created facies category
-                                                      uiOutput("facieschoices"), #dynamic radio button list of created facies categories
-                                                      actionButton("update_fac", "Record facies interval"), #button to log/record the brushed interval on the right
-                                                      checkboxInput("modifyfacies", "Clip facies boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the logged facies interval to the nearest beds
-                                         ), #end of sidebarPanel
+      ##################################################################
+      #Third panel for digitizing facies intervals
+      ##################################################################
+      tabPanel("4. Digitize lithofacies intervals",
+        sidebarLayout(
+          sidebarPanel(width = 4,
+            textInput("facies_text", "Facies name", value = "(e.g., channel axis)"), #text input for the facies name
+            actionButton("create_fac_name", "Create facies category"), #button to create the facies category
+            actionButton("delete_fac_name", "Delete facies category"), #button to delete the last created facies category
+            uiOutput("facieschoices"), #dynamic radio button list of created facies categories
+            actionButton("update_fac", "Record facies interval"), #button to log/record the brushed interval on the right
+            checkboxInput("modifyfacies", "Clip facies boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the logged facies interval to the nearest beds
+          ), #end of sidebarPanel
 
-                                         mainPanel(
-                                           fluidRow(
-                                             column(width = 12, height = 500,
-                                                    h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
-                                                    fluidRow(
-                                                      column(width = 5, height = 500,
-                                                             plotOutput("plot6", height= "500px", width = "100%",brush = brushOpts(id = "plot6_brush")) #left plot to navigate on the right plot
-                                                      ),
-                                                      column(width = 5,height = 500,
-                                                             plotOutput("plot7", height= "500px", width = "100%", brush = brushOpts(id = "plot7_brush" )) #right plot to brush the desired interval
-                                                      )
-                                                    ) # end of fluid row
-                                             ) # end of column
-                                           ), # end of fluid row
-                                           fluidRow(
-                                             actionButton("delete_pt_fac", "Delete last interval"),
-                                             actionButton("delete_row_fac", "Delete selected row(s) in table"),
-                                             hr(),
-                                             DT::dataTableOutput('factable')
-                                           ) # end fluid row
-                                         ) # end of main panel
-                                       ) # end of sidebar layout
-                              ), # end tabPanel
+          mainPanel(
+            fluidRow(
+              column(width = 12, height = 500,
+                h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
+                fluidRow(
+                  column(width = 5, height = 500,
+                    plotOutput("plot6", height= "500px", width = "100%",brush = brushOpts(id = "plot6_brush")) #left plot to navigate on the right plot
+                  ),
+                  column(width = 5,height = 500,
+                    plotOutput("plot7", height= "500px", width = "100%", brush = brushOpts(id = "plot7_brush" )) #right plot to brush the desired interval
+                  )
+                ) # end of fluid row
+              ) # end of column
+            ), # end of fluid row
+            fluidRow(
+              actionButton("delete_pt_fac", "Delete last interval"),
+              actionButton("delete_row_fac", "Delete selected row(s) in table"),
+              hr(),
+              dataTableOutput('factable')
+            ) # end fluid row
+          ) # end of main panel
+        ) # end of sidebar layout
+      ), # end tabPanel
 
-                              ##################################################################
-                              #Fourth panel for digitizing element intervals
-                              ##################################################################
-                              tabPanel("5. Digitize architectural elements",
-                                       sidebarLayout(
-                                         sidebarPanel(width = 4,
-                                                      textInput("element_text", "Element Name", value = "(e.g., Channel 1)"), #text input for the element name
-                                                      actionButton("create_element_name", "Create element cateogry"), #button to create a new element category
-                                                      actionButton("delete_element_name", "Delete element category"), #button to delete the last created element category
-                                                      uiOutput("elementchoices"), #dynamic radio button list of created element categories
-                                                      actionButton("update_element", "Record element interval"), #button to log/record the brushed interval as the selected category
-                                                      checkboxInput("modifyelements", "Clip element boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the selected element interval to the nearest bed boundaries
-                                         ), #end sidebarPanel
+      ##################################################################
+      #Fourth panel for digitizing element intervals
+      ##################################################################
+      tabPanel("5. Digitize architectural elements",
+        sidebarLayout(
+          sidebarPanel(width = 4,
+            textInput("element_text", "Element Name", value = "(e.g., Channel 1)"), #text input for the element name
+            actionButton("create_element_name", "Create element cateogry"), #button to create a new element category
+            actionButton("delete_element_name", "Delete element category"), #button to delete the last created element category
+            uiOutput("elementchoices"), #dynamic radio button list of created element categories
+            actionButton("update_element", "Record element interval"), #button to log/record the brushed interval as the selected category
+            checkboxInput("modifyelements", "Clip element boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the selected element interval to the nearest bed boundaries
+          ), #end sidebarPanel
 
-                                         mainPanel(
-                                           fluidRow(
-                                             column(width = 12, height = 500,
-                                                    h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
-                                                    fluidRow(
-                                                      column(width = 5, height = 500,
-                                                             plotOutput("plot8", height= "500px", width = "100%",brush = brushOpts(id = "plot8_brush")) #left plot for navigating
-                                                      ),
-                                                      column(width = 5,height = 500,
-                                                             plotOutput("plot9", height= "500px", width = "100%", brush = brushOpts(id = "plot9_brush" )) #right plot for brushing the desired interval
-                                                      )
-                                                    )#end fluid row
-                                             )#end column
-                                           ), #end fluid row
-                                           fluidRow(
-                                             actionButton("delete_pt_element", "Delete last interval"), #button to delete the last logged interval from the recorded data
-                                             actionButton("delete_row_element", "Delete selected row(s) in table"), #button to delete all the selected rows from the table
-                                             hr(),
-                                             DT::dataTableOutput('elementtable') #table to display logged element intervals
-                                           ) # end of fluid row
-                                         ) #end main panel
-                                       ) #end sidebarLayout
-                              ), #end tab panel
+          mainPanel(
+            fluidRow(
+              column(width = 12, height = 500,
+                h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
+                fluidRow(
+                  column(width = 5, height = 500,
+                    plotOutput("plot8", height= "500px", width = "100%",brush = brushOpts(id = "plot8_brush")) #left plot for navigating
+                  ),
+                  column(width = 5,height = 500,
+                    plotOutput("plot9", height= "500px", width = "100%", brush = brushOpts(id = "plot9_brush" )) #right plot for brushing the desired interval
+                  )
+                )#end fluid row
+              )#end column
+            ), #end fluid row
+            fluidRow(
+              actionButton("delete_pt_element", "Delete last interval"), #button to delete the last logged interval from the recorded data
+              actionButton("delete_row_element", "Delete selected row(s) in table"), #button to delete all the selected rows from the table
+              hr(),
+              dataTableOutput('elementtable') #table to display logged element intervals
+            ) # end of fluid row
+          ) #end main panel
+        ) #end sidebarLayout
+      ), #end tab panel
 
-                              ##################################################################
-                              #Fifth panel for digitizing element set/intervals
-                              ##################################################################
-                              tabPanel("6. Digitize architectural element sets or stratigraphic intervals",
-                                       sidebarLayout(
-                                         sidebarPanel(width = 4,
-                                                      textInput("element_set_text", "Element set/interval name", value = "(e.g., Channel complex 1)"), #text input for the element set/interval
-                                                      actionButton("create_element_set_name", "Create element set"), #button to create a new element set/interval category
-                                                      actionButton("delete_elementset_name", "Delete element set"), #button to delete the last created element set/interval category
-                                                      uiOutput("elementsetchoices"), #dynamic radio button list of created element set/interval category
-                                                      actionButton("update_elementset", "Update element set selection"), #button to log/record the brushed itnerval as the selected category
-                                                      checkboxInput("modifyelementsets", "Clip element set boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the selected element set interval to the nearest bed boundaries
-                                         ), # end of sidebar
+      ##################################################################
+      #Fifth panel for digitizing element set/intervals
+      ##################################################################
+      tabPanel("6. Digitize architectural element sets or stratigraphic intervals",
+        sidebarLayout(
+          sidebarPanel(width = 4,
+            textInput("element_set_text", "Element set/interval name", value = "(e.g., Channel complex 1)"), #text input for the element set/interval
+            actionButton("create_element_set_name", "Create element set"), #button to create a new element set/interval category
+            actionButton("delete_elementset_name", "Delete element set"), #button to delete the last created element set/interval category
+            uiOutput("elementsetchoices"), #dynamic radio button list of created element set/interval category
+            actionButton("update_elementset", "Update element set selection"), #button to log/record the brushed itnerval as the selected category
+            checkboxInput("modifyelementsets", "Clip element set boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the selected element set interval to the nearest bed boundaries
+          ), # end of sidebar
 
-                                         mainPanel(
-                                           fluidRow(
-                                             column(width = 12, height = 500,
-                                                    h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
-                                                    fluidRow(
-                                                      column(width = 5, height = 500,
-                                                             plotOutput("plot10", height= "500px", width = "100%",brush = brushOpts(id = "plot10_brush")) #left plot for navigating
-                                                      ),
-                                                      column(width = 5,height = 500,
-                                                             plotOutput("plot11", height= "500px", width = "100%", brush = brushOpts(id = "plot11_brush")) #right plot for brushing the desired interval
-                                                      )
-                                                    ) #end of fluid row
-                                             ) #end of column
-                                           ), # end of fluid row
-                                           fluidRow(
-                                             actionButton("delete_element_set", "Delete Last Interval"), #button to delete the last logged interval from the recorded element set data
-                                             actionButton("delete_row_elementset", "Delete Selected Row(s) in Table"), #button to delete all selected rows from the table
-                                             hr(),
-                                             DT::dataTableOutput('elementsettable') #table to display logged element set intervals
-                                           ) # end of fluidrow
-                                         ) # end of mainPanel
-                                       ) # end of sidebar layout
-                              ), #end of tab panel
+          mainPanel(
+            fluidRow(
+              column(width = 12, height = 500,
+                h4("Drag window to zoom on LEFT plot. Digitize points on the RIGHT plot."),
+                fluidRow(
+                  column(width = 5, height = 500,
+                    plotOutput("plot10", height= "500px", width = "100%",brush = brushOpts(id = "plot10_brush")) #left plot for navigating
+                  ),
+                  column(width = 5,height = 500,
+                    plotOutput("plot11", height= "500px", width = "100%", brush = brushOpts(id = "plot11_brush")) #right plot for brushing the desired interval
+                  )
+                ) #end of fluid row
+              ) #end of column
+            ), # end of fluid row
+            fluidRow(
+              actionButton("delete_element_set", "Delete Last Interval"), #button to delete the last logged interval from the recorded element set data
+              actionButton("delete_row_elementset", "Delete Selected Row(s) in Table"), #button to delete all selected rows from the table
+              hr(),
+              dataTableOutput('elementsettable') #table to display logged element set intervals
+            ) # end of fluidrow
+          ) # end of mainPanel
+        ) # end of sidebar layout
+      ), #end of tab panel
 
-                              ##################################################################
-                              #Seventh panel for setting up award numeric things
-                              ##################################################################
-                              tabPanel("7. Numeric Settings",
-                                       fluidPage(
-                                         fluidRow(
-                                           textInput("MudSize", "Mud/clay size", value = "0.001"), #text inputs for each grain size deviation
-                                           textInput("SiltSize", "Silt size", value = "0.0332"),
-                                           textInput("VeryFineSize", "Very fine sand size", value = "0.09375"),
-                                           textInput("FineSize", "Fine sand size", value = "0.1875"),
-                                           textInput("MediumSize", "Medium sand size", value = "0.35"),
-                                           textInput("CoarseSize", "Coarse sand size", value = "0.75"),
-                                           textInput("VeryCoarseSize", "Very coarse sand size", value = "1.5"),
-                                           textInput("GranuleSize", "Granule size", value = "3"),
-                                           textInput("PebbleSize", "Pebble size", value = "34"),
-                                           textInput("CobbleSize", "Cobble size", value = "160"),
-                                           textInput("BoulderSize", "Boulder size", value = "256"),
-                                           hr(),
-                                           textInput("ResGS","Reservoir grain size cutoff", value = "0.063475"), #resrvoir cuttoff to designate reservoir (1) from non-reservoir (0)
-                                           hr(),
-                                           textInput("StratInc","Increment  to discretize data at", value = "0.01") #the incriment used to create the stratigraphic section
-                                         ) # end of fluidRow
-                                       ) # end of fluidPage
-                              ), #end of panel
+      ##################################################################
+      #Seventh panel for setting up award numeric things
+      ##################################################################
+      tabPanel("7. Numeric Settings",
+        fluidPage(
+          fluidRow(
+            textInput("MudSize", "Mud/clay size", value = "0.001"), #text inputs for each grain size deviation
+            textInput("SiltSize", "Silt size", value = "0.0332"),
+            textInput("VeryFineSize", "Very fine sand size", value = "0.09375"),
+            textInput("FineSize", "Fine sand size", value = "0.1875"),
+            textInput("MediumSize", "Medium sand size", value = "0.35"),
+            textInput("CoarseSize", "Coarse sand size", value = "0.75"),
+            textInput("VeryCoarseSize", "Very coarse sand size", value = "1.5"),
+            textInput("GranuleSize", "Granule size", value = "3"),
+            textInput("PebbleSize", "Pebble size", value = "34"),
+            textInput("CobbleSize", "Cobble size", value = "160"),
+            textInput("BoulderSize", "Boulder size", value = "256"),
+            hr(),
+            textInput("ResGS","Reservoir grain size cutoff", value = "0.063475"), #resrvoir cuttoff to designate reservoir (1) from non-reservoir (0)
+            hr(),
+            numericInput("StratInc","Increment  to discretize data at", value = "0.01") #the incriment used to create the stratigraphic section ##SHOULD BE A NUMERIC INPUT!
+          ) # end of fluidRow
+        ) # end of fluidPage
+      ), #end of panel
 
-                              ##################################################################
-                              #Eight panel for final naming prior to hitting go and process the data
-                              ##################################################################
-                              tabPanel("8. Process digitized data",
-                                       #sidebarLayout(
-                                       fluidPage(
-                                         fluidRow(
-                                           h4("Section name location options"),
-                                           column(3,
-                                                  textInput("section_name", "Section/Core Name", value = ""), #text inputs for the location of the stratigraphic sections
-                                                  textInput("section_loc", "Section/Core Location", value=""),
-                                                  textInput("UTM_E", "UTM Easting", value=""),
-                                                  textInput("UTM_N", "UTM Northing", value="")
-                                           ), #end of column
+      ##################################################################
+      #Eight panel for final naming prior to hitting go and process the data
+      ##################################################################
+      tabPanel("8. Process digitized data",
+        #sidebarLayout(
+        fluidPage(
+          fluidRow(
+          h4("Section name location options"),
+          column(3,
+            textInput("section_name", "Section/Core Name", value = ""), #text inputs for the location of the stratigraphic sections
+            textInput("section_loc", "Section/Core Location", value=""),
+            textInput("UTM_E", "UTM Easting", value=""),
+            textInput("UTM_N", "UTM Northing", value="")
+          ), #end of column
 
-                                           h4("Which statistics do you want to compute?"),
-                                           column(5,
-                                                  checkboxInput("BedStats", "Compute bed-scale statistics"), #check box inputs to run the different levels of statistics
-                                                  checkboxInput("FaciesStats", "Compute facies-scale statistics"),
-                                                  checkboxInput("ElementStats", "Compute element-scale statistics"),
-                                                  checkboxInput("ElementSetStats", "Compute element-set/strat. interval statistics")
-                                           ) #end of column
-                                         ), #end fluidRow
-                                         hr(),
-                                         actionButton("process_pts", "Process selected points"), #button to start the descretization process given the selected inputs
-                                         downloadButton("downloadSectData", "Download processed section data") #download the processed data once complete
-                                       ) # end of page
-                              ) # end of panel
-                   ), # end of navbarMenu
+          h4("Which statistics do you want to compute?"),
+          column(5,
+            checkboxInput("BedStats", "Compute bed-scale statistics"), #check box inputs to run the different levels of statistics
+            checkboxInput("FaciesStats", "Compute facies-scale statistics"),
+            checkboxInput("ElementStats", "Compute element-scale statistics"),
+            checkboxInput("ElementSetStats", "Compute element-set/strat. interval statistics")
+          ) #end of column
+        ), #end fluidRow
+        hr(),
+        fluidRow(actionButton("process_pts", "Process selected points")), #button to start the descretization process given the selected inputs),
+        hr(),
+        fluidRow(downloadButton("downloadSectData", "Download processed data in stRat stat format")), #download the processed data once complete),
+        fluidRow(downloadButton("downloadStripLog", "Download processed data in graphiclog format")) #download the processed data once complete)
 
-                   ###################################################################
-                   #Appending Discrete Data to Digitized Data
-                   ##################################################################
-                   #Panel for adding discrete measurements that we don't "digitize" they have already been measured (fractures, porosity, permeability, paleocurrent, core orientation)
-                   navbarMenu("Append Additional Measurements",
-                              tabPanel("Import discrete data",
-                                       sidebarLayout(
-                                         sidebarPanel(
-                                           h4("Import discrete measurement data"),
-                                           p("This page will append discrete measurement data (e.g., prosity/permeability samples, fracture orientations/dimensions) to a already created digitized file. If summarized, all imported measurements will be summarized."),
-                                           fileInput("sectfile", "Choose DIGITIZED STRATIGRAPHIC SECTION data .csv file of data to add additional measurements too", #file input for the already digitized stratigraphic section data file
-                                                     accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
-                                           ), # end of fileInput
-                                           fileInput("measurementfile", "Choose .csv file of MEASUREMENT data to append to digitized stratigraphic section data", #file input for the measurements that are to be joined
-                                                     accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
-                                           ), # end of fileInput
-                                           checkboxInput("header", "Header in additional measurement data?", TRUE),
-                                           hr(),
-                                           numericInput("ThickColumn", label = "Which column is depth/thickness", value=1, min=1, max=100), #numeric input to specify which column within the input stratigraphic section file is the thickness
-                                           hr(),
-                                           h5("Summarize continuous data by:"),
-                                           checkboxInput("Discrete_BedStat", "Bed"), #check boxes to specify which level of heirarchy statistics should be computed on
-                                           checkboxInput("Discrete_FaciesStat", "Facies"),
-                                           checkboxInput("Discrete_ElementStat", "Element"),
-                                           checkboxInput("Discrete_ElementSetStat", "Element set/Interval"),
-                                           actionButton("ImportMeasurments_Discrete", "Join measurements to section data"), #button to run the joining process
-                                           downloadButton("downloadMergedMeasurementData", "Download merged data") #button to download the joined and summarized data
-                                         ), #end of sidebar Panel
-                                         mainPanel(
-                                           tableOutput("MeasurementContents") #table to display the measurement file, once it is selected in the file input
-                                         ) # end of main panel
-                                       ) # end of sidebarLayout
-                              ), # end of tab for discrete measurements
+      ) # end of page
+    ) # end of panel
+  ), # end of navbarMenu
 
-                              ##################################################################
-                              #Appending Continuous Data to Digitized Data
-                              ##################################################################
-                              #Panel for adding discrete measurements that we don't "digitize" they have already been measured (fractures, porosity, permeability, paleocurrent, core orientation)
-                              tabPanel("Import continuous data",
-                                       sidebarLayout(
-                                         sidebarPanel(
-                                           h4("Import continuous/log data"),
-                                           p("This page will append continuous measurement data (e.g., petrophysical well log data) to a already created digitized file. If summarized, all imported measurements will be summarized."),
-                                           fileInput("sectfile2", "Choose DIGITIZED STRATIGRAPHIC SECTION data .csv file of data to add additional measurements too", #file input for the already digitized stratigraphic section data file
-                                                     accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
-                                           ),
-                                           fileInput("measurementfile2", "Choose .csv file of MEASUREMENT data to append to digitized section/core data", #file input for the measurements that are to be joined
-                                                     accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
-                                           ),
-                                           checkboxInput("header2", "Header in additional measurement data?", TRUE),
-                                           hr(),
-                                           numericInput("ThickColumn2", label = "Which column is depth/thickness", value = 1, min=1, max=100), #numeric input to specify which column within the input stratigraphic section file is the thickness
-                                           hr(),
-                                           h5("Interpolate continuous data"),
-                                           checkboxInput("Interpolate_Continuous", "Interpolate data"), #check boxes to specify if continuous data should be interpolated across all descritized intervals
-                                           hr(),
-                                           h5("Summarize continuous data by:"),
-                                           checkboxInput("Continuous_BedStat", "Bed"), #check boxes to specify which level of heirarchy statistics should be computed on
-                                           checkboxInput("Continuous_FaciesStat", "Facies"),
-                                           checkboxInput("Continuous_ElementStat", "Element"),
-                                           checkboxInput("Continuous_ElementSetStat", "Element set/Interval"),
-                                           p("stRat stat currently summarizes continuous data by bed - to be changed soon"),
-                                           actionButton("ImportMeasurments_Continuous", "Join measurements to section data"),
-                                           downloadButton("downloadMergedMeasurementData2", "Download merged data") #button to download the joined and summarized data
-                                         ), #end of sidebar Panel
-                                         mainPanel(
-                                           tableOutput("MeasurementContents2") #table to display the measurement file, once it is selected in the file input
-                                         ) # end of main panel
-                                       ) # end of side bar layout
-                              ), # end of tab panel for continuous data
+      ###################################################################
+      #Appending Discrete Data to Digitized Data
+      ##################################################################
+      #Panel for adding discrete measurements that we don't "digitize" they have already been measured (fractures, porosity, permeability, paleocurrent, core orientation)
+      navbarMenu("Append Additional Measurements",
+        tabPanel("Import discrete data",
+          sidebarLayout(
+            sidebarPanel(
+              h4("Import discrete measurement data"),
+              p("This page will append discrete measurement data (e.g., prosity/permeability samples, fracture orientations/dimensions) to a already created digitized file. If summarized, all imported measurements will be summarized."),
+              fileInput("sectfile", "Choose DIGITIZED STRATIGRAPHIC SECTION data .csv file of data to add additional measurements too", #file input for the already digitized stratigraphic section data file
+                accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
+              ), # end of fileInput
+              fileInput("measurementfile", "Choose .csv file of MEASUREMENT data to append to digitized stratigraphic section data", #file input for the measurements that are to be joined
+                accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
+              ), # end of fileInput
+              checkboxInput("header", "Header in additional measurement data?", TRUE),
+              hr(),
+              numericInput("ThickColumn", label = "Which column is depth/thickness", value=1, min=1, max=100), #numeric input to specify which column within the input stratigraphic section file is the thickness
+              hr(),
+              h5("Summarize continuous data by:"),
+              checkboxInput("Discrete_BedStat", "Bed"), #check boxes to specify which level of heirarchy statistics should be computed on
+              checkboxInput("Discrete_FaciesStat", "Facies"),
+              checkboxInput("Discrete_ElementStat", "Element"),
+              checkboxInput("Discrete_ElementSetStat", "Element set/Interval"),
+              actionButton("ImportMeasurments_Discrete", "Join measurements to section data"), #button to run the joining process
+              downloadButton("downloadMergedMeasurementData", "Download merged data") #button to download the joined and summarized data
+            ), #end of sidebar Panel
+            mainPanel(
+              tableOutput("MeasurementContents") #table to display the measurement file, once it is selected in the file input
+            ) # end of main panel
+          ) # end of sidebarLayout
+        ), # end of tab for discrete measurements
 
-                              ##################################################################
-                              #Creating stratigraphic libarary
-                              ##################################################################
-                              tabPanel("Create Stratigraphic Data Library",
-                                       sidebarLayout(
-                                         sidebarPanel(
-                                           fileInput("Sectfile", "Choose pre-digitzed stratigraphic .csv file", #file input for already-made stratigraphic section files to be appened into a stratigraphic library
-                                                     accept = c(".csv")
-                                           ),
-                                           actionButton("ImportSectionData", "Import selected file"), #button to append the selected stratigraphic section
-                                           actionButton("DeleteSectionData", "Delete last uploaded file"), #button to remove the last selected stratigraphic section file
-                                           downloadButton("downloadTotalData", "Download merged data") #button to download the compiled stratigraphic library
-                                         ),
-                                         mainPanel(
-                                           fluidRow(
-                                             tableOutput('SectDataToImport') #reactive table to display information regarding the selected stratigraphic section files
-                                           ) # end of fluidRow
-                                         ) # end of mainPanel
-                                       ) # end of sidebarLayout
-                              ) # end of tabPanel
-                   ) # end of Navbar
+      ##################################################################
+      #Appending Continuous Data to Digitized Data
+      ##################################################################
+      #Panel for adding discrete measurements that we don't "digitize" they have already been measured (fractures, porosity, permeability, paleocurrent, core orientation)
+      tabPanel("Import continuous data",
+        sidebarLayout(
+          sidebarPanel(
+            h4("Import continuous/log data"),
+            p("This page will append continuous measurement data (e.g., petrophysical well log data) to a already created digitized file. If summarized, all imported measurements will be summarized."),
+            fileInput("sectfile2", "Choose DIGITIZED STRATIGRAPHIC SECTION data .csv file of data to add additional measurements too", #file input for the already digitized stratigraphic section data file
+              accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
+            ),
+            fileInput("measurementfile2", "Choose .csv file of MEASUREMENT data to append to digitized section/core data", #file input for the measurements that are to be joined
+              accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
+            ),
+            checkboxInput("header2", "Header in additional measurement data?", TRUE),
+            hr(),
+            numericInput("ThickColumn2", label = "Which column is depth/thickness", value = 1, min=1, max=100), #numeric input to specify which column within the input stratigraphic section file is the thickness
+            hr(),
+            h5("Interpolate continuous data"),
+            checkboxInput("Interpolate_Continuous", "Interpolate data"), #check boxes to specify if continuous data should be interpolated across all descritized intervals
+            hr(),
+            h5("Summarize continuous data by:"),
+            checkboxInput("Continuous_BedStat", "Bed"), #check boxes to specify which level of heirarchy statistics should be computed on
+            checkboxInput("Continuous_FaciesStat", "Facies"),
+            checkboxInput("Continuous_ElementStat", "Element"),
+            checkboxInput("Continuous_ElementSetStat", "Element set/Interval"),
+            p("stRat stat currently summarizes continuous data by bed - to be changed soon"),
+            actionButton("ImportMeasurments_Continuous", "Join measurements to section data"),
+            downloadButton("downloadMergedMeasurementData2", "Download merged data") #button to download the joined and summarized data
+          ), #end of sidebar Panel
+        mainPanel(
+          tableOutput("MeasurementContents2") #table to display the measurement file, once it is selected in the file input
+        ) # end of main panel
+      ) # end of side bar layout
+    ), # end of tab panel for continuous data
+
+    ##################################################################
+    #Creating stratigraphic libarary
+    ##################################################################
+    tabPanel("Create Stratigraphic Data Library",
+      sidebarLayout(
+        sidebarPanel(
+          fileInput("Sectfile", "Choose pre-digitzed stratigraphic .csv file", #file input for already-made stratigraphic section files to be appened into a stratigraphic library
+            accept = c(".csv")
+          ),
+          actionButton("ImportSectionData", "Import selected file"), #button to append the selected stratigraphic section
+          actionButton("DeleteSectionData", "Delete last uploaded file"), #button to remove the last selected stratigraphic section file
+          downloadButton("downloadTotalData", "Download merged data") #button to download the compiled stratigraphic library
+        ),
+        mainPanel(
+          fluidRow(
+            tableOutput('SectDataToImport') #reactive table to display information regarding the selected stratigraphic section files
+          ) # end of fluidRow
+        ) # end of mainPanel
+      ) # end of sidebarLayout
+    ) # end of tabPanel
+    ) # end of Navbar
   ) # end of UI
 
   # Define server logic required to draw a histogram
@@ -423,6 +427,7 @@ launchstRatstat <- function(){
     SectDataProcessed <- reactiveValues(df=tibble(Thickness=0.1)) #Dataframe for section data at the end processing the data
     SectDataJoined_Disc <- reactiveValues(df=tibble(Thickness=0.1))
     SectDataJoined_Cont <- reactiveValues(df=tibble(Thickness=0.1))
+    StripLogData <- reactiveValues(df=tibble(BedNumber=1.0,name="Example",collection="Example",tops=1.0, th=1.0,gs_tops=1.0,sand_shl=1.0, mean_gs=1.0, max_gs=1.0, grain_size_dia="Example",grain_size_thick="Example"))
 
     #Reactive dataframe for saving the data
     SaveData <- reactiveValues(df=tibble(Save="Temp"))
@@ -448,8 +453,8 @@ launchstRatstat <- function(){
     observeEvent(input$save_data,{
       #Remove all data currently in the SaveData$df so users can't save multiple copies of the same data to one dataframe.
       SaveData$df <- SaveData$df[1,]
-      
-      #convert all the reactive dataframes in their current state into static dataframes with a new column that says their function
+
+      #Convert all the reactive dataframes in their current state into static dataframes with a new column that says their function
       topbottompts <- topbottom$df
       bedtops_raw <- bedtops_raw$df
       values_raw <- values$df
@@ -471,6 +476,7 @@ launchstRatstat <- function(){
 
       #Bind them all together to make the save file
       SaveData$df <- bind_rows(SaveData$df,topbottompts, bedtops_raw,values_raw,gsmarkers_raw,sedstrat_raw,facies_raw,element_raw,elementset_raw)
+      print(SaveData$df)
     })
 
     #Downloading Saved Data - use download handler to create a .csv with a name and system date
@@ -496,16 +502,16 @@ launchstRatstat <- function(){
         bedtops_raw$df <- bedtops_raw$df %>% filter(x<0)
         values$df <- values$df %>% filter(x<0)
         gsmarkers$df <- gsmarkers$df %>% filter(x<0)
-        sedstrat_raw$df <- sedstrat_raw$df %>% filter(ymin_raw>0)
-        facies_raw$df <- facies_raw$df %>% filter(ymin_raw>0)
-        element_raw$df <- element_raw$df %>% filter(ymin_raw>0)
-        elementset_raw$df <- elementset_raw$df %>% filter(ymin_raw>0)
+        sedstrat_raw$df <- sedstrat_raw$df %>% filter(ymin_raw<0)
+        facies_raw$df <- facies_raw$df %>% filter(ymin_raw<0)
+        element_raw$df <- element_raw$df %>% filter(ymin_raw<0)
+        elementset_raw$df <- elementset_raw$df %>% filter(ymin_raw<0)
         sedstructnames$df <- sedstructnames$df %>% filter(name=="Example Sed. Structure")
         faciesnames$df <- faciesnames$df %>% filter(name=="Example Facies")
         elementnames$df <- elementnames$df %>% filter(name=="Example Element")
         elementsetnames$df <- elementsetnames$df %>% filter(name=="Example Element Set")
-        
-        #Parse/filter the logged points data in the load file into differentdataframes
+
+        #Parse/filter the logged points data in the load file into differentdataframes. Filter each save type (e.g., BedTops) and select only the relevant columns and data 
         topbottompts_load <- LoadData %>% filter (Save=="TopBottom") %>% select(x,y,PtLabel) %>% filter (x>0)
         bedtops_load <- LoadData %>% filter(Save=="BedTops") %>% select(x, y, pt, BedTop) %>% filter (x>0)
         values_load<- LoadData %>% filter(Save=="GSValues") %>% select(x,y,pt) %>% filter (x>0)
@@ -700,7 +706,8 @@ launchstRatstat <- function(){
     output$plot5 <- renderPlot({
       if(is.null(input$files)){} # if there's no file input don't plot anything
       else{ # if there is a file input then plot the interactive ggplot
-        ggplot(data=null$df, aes(x=nullx,y=nully))+geom_point()  +
+        ggplot(data=null$df, aes(x=nullx,y=nully)) +
+          geom_point() +
           BlankTheme +
           annotation_raster(LoadedImage(),ymin=0,ymax =height(LoadedImage()), xmin=0, xmax=width(LoadedImage())) +
           coord_cartesian(xlim=ranges2_sed$x,ylim=ranges2_sed$y) +
@@ -1164,7 +1171,7 @@ launchstRatstat <- function(){
     observeEvent(input$process_pts, {
       ####There is a value of -1 that is initialized in the dataframe (you can see this at the top of the server code), filter them out and sort based on y-value. Lastly, all reactive dataframe are convereted to non-reactive dataframe
       topbottom <- topbottom$df %>% filter(x>0) %>% arrange(y)
-      gsmarkers <- gsmarkers$df %>% filter(x>0) %>% arrange(x)
+      gsmarkers <- gsmarkers$df %>% filter(x>0)
       df.bedtops <- bedtops_raw$df %>% filter(x>0) %>% arrange(y)
       df.GSpts <- values$df %>% filter(x>0)%>% arrange(y)
       df.sedstrat <- sedstrat_raw$df %>% filter(ymin_raw>0) %>% arrange(ymin_raw)
@@ -1182,6 +1189,8 @@ launchstRatstat <- function(){
       #Bind the diameter vector to the picked grain size division dataframe
       df.GS1 <- cbind(gsmarkers,diameter)
 
+      print(df.GS1)
+
       #Compute the grain size that is used to turn x coordinates of grain size points (df.GSpts) in to numeric grain size. "rule=2" allow for points picked outside that fall outside of the function to return the closest value.
       fun.GS1 <-approxfun(df.GS1$x, df.GS1$diameter, method="linear", rule=2)
 
@@ -1197,7 +1206,7 @@ launchstRatstat <- function(){
       df.GSpts <- df.GSpts %>% mutate(GS = fun.GS1(df.GSpts$x), Thick = (fun.Thick(df.GSpts$y)))
 
       #Create a sequence for the thickness of the strat section that spans from the thickness a the bottom to the thickness at the top, by the increment set by the user.
-      NewY <- seq(from = isolate(input$sectthick_base), to = isolate(input$sectthick_top), by = StratInc)
+      NewY <- seq(from = isolate(input$sectthick_base)+StratInc, to = isolate(input$sectthick_top), by = StratInc)
       SectData <- data.frame(Thickness = NewY)
 
       #Mutate in the bedtops using the thickness fucntion (fun.Thick), then round them to the nearest StratInc. Set the bedtops to a new dataframe, "MatchBedTops", so they can be joined to the section data
@@ -1281,9 +1290,10 @@ launchstRatstat <- function(){
       #Fill in bed numbers then enter loop to fill in the bednum column
       bednumber <- 1
       for (i in 1:nrow(SectData)){ #For loop through the section data and increase the bed number by 1 every time a bed top is found
-        if (!is.na(SectData[i,3]))
-        {SectData[i,8] <- bednumber
-        }
+        #if (!is.na(SectData[i,3]))
+        #{SectData[i,8] <- bednumber
+        #}
+        SectData[i,8] <- bednumber
         if(SectData[i,2]==1){
           bednumber <- bednumber+1
         }
@@ -1346,7 +1356,7 @@ launchstRatstat <- function(){
 
         #Increment through the facies dataframe and if else each row. Try to get the ifelse to not replace the cells if it fails the test.
         for (i in 1:nrow(df.facies)){
-          faciesmin_y <- as.numeric(df.facies[i,5]) ## Set the minimum and maximum y-location (from the brush) to variables
+          faciesmin_y <- as.numeric(df.facies[i,5]) ## Set the minimum and maximum y-location (from the brush) to variables 
           faciesmax_y <- as.numeric(df.facies[i,6])
 
           SectData$Facies <-  ifelse(SectData$Thickness>faciesmin_y & SectData$Thickness<=faciesmax_y, df.facies[i,3], SectData$Facies)
@@ -1399,57 +1409,151 @@ launchstRatstat <- function(){
         SectData <- transform(SectData, ElementSet = as.character(ElementSet),
                               ElementSetBlockNum = as.numeric(ElementSetBlockNum)
         )
-      }#End if(nrow(elementset)>0)
+      } #End if(nrow(elementset)>0)
 
       ####Start bed/facies/element/elementset statistics
+      ##In this portion if the check box is checked then statistics will be calculated for each portion of the heirarchy
+
       print("Start statistics")
 
       #Bed Statistics
       if(input$BedStats==TRUE){ #if bed-scales statistics are desired then do the following
-        df_bedsummarize <- SectData %>%
-          group_by(BedNumber) %>% #group by bed number
-          summarise(Thickness = max(Thickness), BedThick=n()*StratInc, BedMeanGS = mean(GS, na.rm=TRUE), BedMaxGS=max(GS, na.rm=TRUE)) %>% #great a summary table, the first column (thickenss) will be used to joint the data back to the top of each bed
-          select(-BedNumber) #we drop the bed number row of the summary table so we can just join by the "Thickness column"
+        df_bedsummarize_striplog <- SectData %>%
+          dplyr::group_by(BedNumber) %>% #group by bed number
+          dplyr::summarise(Thickness = max(Thickness), BedThick=n()*StratInc, BedMeanGS = mean(GS, na.rm=TRUE), BedMaxGS=max(GS, na.rm=TRUE)) #great a summary table, the first column (thickenss) will be used to joint the data back to the top of each bed
+        df_bedsummarize <- df_bedsummarize_striplog %>% select(-BedNumber) #we drop the bed number row of the summary table so we can just join by the "Thickness column"
         SectData <- left_join(SectData,df_bedsummarize,by = "Thickness") #Join back
+        print("Bed Statistics Run")
+        print(df_bedsummarize_striplog)
       }
 
       #Facies stats
       if(input$FaciesStats==TRUE & nrow(df.facies)>0){ #if facies-scale statistics are desired and there is facies data provided (i.e., "nrow(df.facies)>0") the do the following
-        df_facsummarize <- SectData %>%
+        df_facsummarize_striplog <- SectData %>%
           dplyr::group_by(FaciesBlockNum) %>% #group by facies block number
-          dplyr::summarise(Thickness = max(Thickness), FaciesThick=n()*(StratInc), FaciesMeanGS = mean(GS, na.rm=TRUE), FaciesNetGross=sum(Reservoir)/n()) %>% #calculate a variety of statistics, and a thickness row like above
-          select(-FaciesBlockNum) #drop facies block number so just join by Thickness
+          dplyr::summarise(Thickness = max(Thickness), FaciesThick=n()*(StratInc), FaciesMeanGS = mean(GS, na.rm=TRUE), FaciesNetGross=sum(Reservoir)/n()) #calculate a variety of statistics, and a thickness row like above
+        df_facsummarize <- df_facsummarize_striplog %>% select(-FaciesBlockNum) #drop facies block number so just join by Thickness
         SectData <- left_join(SectData,df_facsummarize,by = "Thickness") #Join back
         print("Facies Statistics Run")
+        print(df_facsummarize_striplog)
       }
 
       #Element statistics
       if(input$ElementStats==TRUE & nrow(df.element)>0){ #Same as above
-        df_elementsummarize <- SectData %>%
+        df_elementsummarize_striplog <- SectData %>%
           dplyr::group_by(ElementBlockNum) %>%
-          dplyr::summarise(Thickness = max(Thickness), ElementThick=n()*(StratInc), ElementMeanGS = mean(GS, na.rm=TRUE), ElementNetGross=sum(Reservoir)/n()) %>%
-          select(-ElementBlockNum)
+          dplyr::summarise(Thickness = max(Thickness), ElementThick=n()*(StratInc), ElementMeanGS = mean(GS, na.rm=TRUE), ElementNetGross=sum(Reservoir)/n())
+        df_elementsummarize <- df_elementsummarize_striplog %>% select(-ElementBlockNum)
         SectData <- left_join(SectData,df_elementsummarize,by = "Thickness")
         print("Element Statistics Run")
+        print(df_elementsummarize_striplog)
       }
 
-      #Elementset statistics
+      #Element Set statistics
       if(input$ElementSetStats==TRUE & nrow(df.elementset)>0){ #Same as above
-        df_elementsetsummarize <- SectData %>%
+        df_elementsetsummarize_striplog <- SectData %>%
           dplyr::group_by(ElementSetBlockNum) %>%
-          dplyr::summarise(Thickness = max(Thickness), ElementSetThick=n()*(StratInc), ElementSetMeanGS = mean(GS, na.rm=TRUE), ElementSetNetGross=sum(Reservoir)/n()) %>%
-          select(-ElementSetBlockNum)
+          dplyr::summarise(Thickness = max(Thickness), ElementSetThick=n()*(StratInc), ElementSetMeanGS = mean(GS, na.rm=TRUE), ElementSetNetGross=sum(Reservoir)/n())
+        df_elementsetsummarize <- df_elementsetsummarize_striplog %>% select(-ElementSetBlockNum)
         SectData <- left_join(SectData,df_elementsetsummarize,by = "Thickness")
         print("ElementSet Statistics Run")
+        print(df_elementsetsummarize_striplog)
       }
 
-      ####Bind the SectData back into a reactive dataframe so it can be downloaded and drop the first row of it
+      #Bind the SectData back into a reactive dataframe so it can be downloaded and drop the first row of it
       SectDataProcessed$df <-  bind_rows(SectDataProcessed$df,SectData)
-      SectDataProcessed$df <-  SectDataProcessed$df[-(1:2),]
+      SectDataProcessed$df <-  SectDataProcessed$df[-1,]
+
+      ####Create reactive dataframe that is in StripLog Format
+      ##In this section we are going to first take the SectData and pull out some statistics on each bed. Then a for loop will be used to go through each bed and grab other information before the two dataframes are joined together
+      print("Starting strip log formatting")
+      print("Doing strip log summarize")
+      #write.csv(SectData, file="~/SectDataPreStats.csv")
+      striplog <- SectData %>% 
+        #filter(!is.na(BedNumber)) %>% #remove any NA bed numbers (i.e., cover/missing core) then calculate some key variables 
+        group_by(BedNumber) %>% 
+        summarize(name = input$section_name, 
+          collection = input$section_loc,
+          base = min(Thickness),
+          tops = max(Thickness),
+          th = (max(Thickness)-min(Thickness)+input$StratInc),
+          gs_tops = last(GS),
+          sand_shl = max(Reservoir),
+          mean_gs = mean(GS),
+          max_gs = max(GS))
+
+      #Here we are going to take the data from SectData and extract which beds correspond to which FaciesBlockNum, ElementBlockNum, and ElementsetBlockNum 
+      striplog_blocknums <- SectData %>% 
+        group_by(BedNumber) %>% 
+        slice(which.max(Thickness)) %>% #extract the top row of each bed number
+        select_if(names(.) %in% c("Facies","FaciesBlockNum","Element","ElementBlockNum","ElementSet","ElementSetBlockNum")) %>% #because the statistics might not have been run a variable extractor are used
+        ungroup()
+
+      striplog <- left_join(striplog, striplog_blocknums, by = "BedNumber") #put the first two parts of the strip log together
+
+      #Join the statistics "...summarize_striplog" dataframes if they have been calculated
+      if(input$FaciesStats==TRUE){
+        striplog <- left_join(striplog, df_facsummarize_striplog, by="FaciesBlockNum")
+      }
+
+      if(input$ElementStats==TRUE){
+        striplog <- left_join(striplog, df_elementsummarize_striplog, by="ElementBlockNum")  
+      }
+
+      if(input$ElementSetStats==TRUE){
+        striplog <- left_join(striplog, df_elementsetsummarize_striplog, by="ElementSetBlockNum")
+      }
+
+      striplog <- striplog %>% select(-starts_with("Thickness")) # because there are Thickness columns each of the "...summarize_striplog" dataframes we can drop anything with a prefix of Thickness 
+
+      ##In this section concatonated strings of input grain size locations are created
+      #Expand the MatchBedTops dataframe from above to include the top and bottom of the section.
+      MatchBedTops <- rbind(c(input$sectthick_base,1),MatchBedTops) #add the base of section thickness to the top of MatchBedTops dataframe
+      MatchBedTops <- rbind(MatchBedTops,c(input$sectthick_top,1)) #add the top of section thickness to the last row of MatchBedTops dataframe
+
+      #A dataframe is create that will have the concatinated strings in side it. This will be populated in the loop below. 
+      df.GS_join <- data.frame(x=c(1),grain_size_dia=c("1"),grain_size_thick=c("1"),BedBase=c(1), BedTop=c(1)) #create new dataframe for the for loop that is coming up next to add onto
+
+      #print("Entering For Loop")
+      for(x in 1:(length(MatchBedTops$Thickness)-1)) { # loop through each bed and create two strings for each bed. One that has the grain size values that were clicked on the image in the grain size profile, and one that has the thickness measurements that relate to those clicked grain size values. 
+        #print(paste("Bed Number: ", x))
+        BedBase_filter <- MatchBedTops[x,1] #thickness of section to the the base of the bed in question
+        BedTop_filter <- MatchBedTops[x+1,1] #thickness of section to the top of the bed (the base of the next bed)
+        df.GSpts_filter <- df.GSpts %>% filter(Thick>BedBase_filter$Thickness[1] & Thick<BedTop_filter$Thickness[1]) #filter all the grain size points to find the grain size points that are within the bed bounds
+
+        VecLength <- nrow(df.GSpts_filter) #how many points are there
+        #print(VecLength)
+        if(nrow(df.GSpts_filter)==0){ #if there are not points within the bed boundaries (it would have been considered cover), give it a single NA value in both strings
+          grain_size_dia <- "NA"
+          grain_size_thick <- "NA"
+        } else { #if there are points then we need to collapse all the picked points into a string
+          grain_size_dia <- paste0(df.GSpts_filter$GS, collapse=",")
+          grain_size_thick <- paste0(df.GSpts_filter$Thick, collapse=",")
+        } 
+
+        #print(paste("BedBase =",BedBase_filter$Thickness[1],". BedTop =",BedTop_filter$Thickness[1],". ConcatenatedGS =",grain_size_dia, ". Length =", VecLength))
+        df.GS_join <- rbind(df.GS_join,data.frame(x,grain_size_dia,grain_size_thick, BedBase=BedBase_filter$Thickness[1], BedTop=BedTop_filter$Thickness[1])) #Join the strings from the if/else statement into the dataframe
+        #print("Joined")
+      }
+
+      df.GS_join <- df.GS_join[-1,] #drop the first row of the dataframe from above. the first row was a place holder
+      df.GS_join$grain_size_dia <- as.character(df.GS_join$grain_size_dia) #convert some these back to strings rather than factors...
+      df.GS_join$grain_size_thick <- as.character(df.GS_join$grain_size_thick) #convert some these back to strings rather than factors...
+      df.GS_join <- df.GS_join %>% select(x,grain_size_dia,grain_size_thick) %>% rename(BedNumber=x) #rename column "x" to be used as the join in the column below
+
+      striplog_join <- left_join(striplog,df.GS_join) #join this data with the original summarize data
+
+      str(striplog_join)
+
+      StripLogData$df <-  bind_rows(StripLogData$df,striplog_join)
+      StripLogData$df <-  StripLogData$df[-1,] #Drop first row from the reactive dataframe that was used as a place holder
 
       #Send notifications
       showNotification("Process Complete - Input stratigraphic data has been digitized", type = "message")
       showNotification("Data is ready to be downloaded", type = "message")
+
+      #write.csv(df.GSpts, file="~/dfGSpts.csv", row.names=FALSE)
+      #write.csv(MatchBedTops, file="~/MatchBedTops.csv", row.names=FALSE)
 
     }) #End of Process Points
 
@@ -1459,7 +1563,17 @@ launchstRatstat <- function(){
         paste("ProcessedStratgraphicData", Sys.Date(), ".csv", sep="")
       },
       content = function(con) {
-        write.csv(SectDataProcessed$df, con, na = "", row.names=FALSE)
+        write.csv(SectDataProcessed$df, con, na = "NA", row.names=FALSE, sep=";")
+      }
+    )
+
+    #Download StripLogData$df when downlaod button is clicked
+    output$downloadStripLog <- downloadHandler(
+      filename = function() {
+        paste("GraphicLog", Sys.Date(), ".csv", sep="")
+      },
+      content = function(con) {
+        write.csv(StripLogData$df, con, na = "NA", row.names=FALSE)
       }
     )
 
@@ -1987,7 +2101,7 @@ launchstRatstat <- function(){
         paste('MergedStratigraphicData-', Sys.Date(), '.csv', sep='')
       },
       content = function(con) {
-        write.csv(TotalSectionData$df, con, na = "", row.names=FALSE)
+        write.csv(TotalSectionData$df, con, na = "", row.names=FALSE, sep=";")
       }
     ) #end of download
   }
