@@ -914,7 +914,7 @@ server <- function(input, output) {
     }
   })
   
-  output$plot9 <- DT::renderDT({
+  output$plot9 <- renderPlot({
     if(is.null(input$files)){} # if there's no file input don't plot anything
     else{ # if there is a file input then plot the interactive ggplot
       ggplot(data=null$df, aes(x=nullx,y=nully))+
@@ -958,7 +958,7 @@ server <- function(input, output) {
   })
   
   #Table for logged element data
-  output$elementtable <- renderDataTable(
+  output$elementtable <- DT::renderDT(
     datatable(filter(element_raw$df, ymin_raw>0), rownames=FALSE, filter=c('none'))
   )
   
