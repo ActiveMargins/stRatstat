@@ -92,7 +92,7 @@ ui <- navbarPage("stRat stat",
                                            actionButton("delete_row", "Delete selected row(s) in table"),
                                            actionButton("updateplot3","Update right-hand plot"),
                                            hr(),
-                                           dataTableOutput('pttable')
+                                           DT::dataTableOutput('pttable')
                                          ) #end fluid row
                                        ) #end mainPanel
                                      ) #end sidebarLayout
@@ -128,7 +128,7 @@ ui <- navbarPage("stRat stat",
                                            actionButton("delete_pt_sed", "Delete last interval"), #button to delete last logged sedimentary structure interval
                                            actionButton("delete_row_sed", "Delete selected row(s) in table"), #button to delete all selected rows in the table
                                            hr(),
-                                           dataTableOutput('sedstrattable') #table to display the logged sedimentary structure data
+                                           DT::dataTableOutput('sedstrattable') #table to display the logged sedimentary structure data
                                          ) #end fluid row
                                        ) # end of main panel
                                      ) # end of sidebarLayout
@@ -166,7 +166,7 @@ ui <- navbarPage("stRat stat",
                                            actionButton("delete_pt_fac", "Delete last interval"),
                                            actionButton("delete_row_fac", "Delete selected row(s) in table"),
                                            hr(),
-                                           dataTableOutput('factable')
+                                           DT::dataTableOutput('factable')
                                          ) # end fluid row
                                        ) # end of main panel
                                      ) # end of sidebar layout
@@ -204,7 +204,7 @@ ui <- navbarPage("stRat stat",
                                            actionButton("delete_pt_element", "Delete last interval"), #button to delete the last logged interval from the recorded data
                                            actionButton("delete_row_element", "Delete selected row(s) in table"), #button to delete all the selected rows from the table
                                            hr(),
-                                           dataTableOutput('elementtable') #table to display logged element intervals
+                                           DT::dataTableOutput('elementtable') #table to display logged element intervals
                                          ) # end of fluid row
                                        ) #end main panel
                                      ) #end sidebarLayout
@@ -242,7 +242,7 @@ ui <- navbarPage("stRat stat",
                                            actionButton("delete_element_set", "Delete Last Interval"), #button to delete the last logged interval from the recorded element set data
                                            actionButton("delete_row_elementset", "Delete Selected Row(s) in Table"), #button to delete all selected rows from the table
                                            hr(),
-                                           dataTableOutput('elementsettable') #table to display logged element set intervals
+                                           DT::dataTableOutput('elementsettable') #table to display logged element set intervals
                                          ) # end of fluidrow
                                        ) # end of mainPanel
                                      ) # end of sidebar layout
