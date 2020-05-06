@@ -7,7 +7,7 @@
 
 launchstRatstat <- function(){
 
-  # User interface function for stRat stat
+ # User interface function for stRat stat
 ui <- navbarPage("stRat stat",
                  navbarMenu("Digitize stratigraphic data",
                             
@@ -1176,9 +1176,7 @@ server <- function(input, output) {
     diameter <- as.numeric(diameter[GScheckGroupIndex])
     #Bind the diameter vector to the picked grain size division dataframe
     df.GS1 <- cbind(gsmarkers,diameter)
-    
-    print(df.GS1)
-    
+ 
     #Compute the grain size that is used to turn x coordinates of grain size points (df.GSpts) in to numeric grain size. "rule=2" allow for points picked outside that fall outside of the function to return the closest value.
     fun.GS1 <-approxfun(df.GS1$x, df.GS1$diameter, method="linear", rule=2)
     
@@ -1194,7 +1192,8 @@ server <- function(input, output) {
     df.GSpts <- df.GSpts %>% mutate(GS = fun.GS1(df.GSpts$x), Thick = (fun.Thick(df.GSpts$y)))
     
     #Create a sequence for the thickness of the strat section that spans from the thickness a the bottom to the thickness at the top, by the increment set by the user.
-    NewY <- seq(from = isolate(input$sectthick_base)+StratInc, to = isolate(input$sectthick_top), by = StratInc)
+    NewY <- seq(from = isolate(input$sectthick_base), to = isolate(input$sectthick_top), by = StratInc)
+    NewY <- NewY[-1]
     SectData <- data.frame(Thickness = NewY)
     
     #Mutate in the bedtops using the thickness fucntion (fun.Thick), then round them to the nearest StratInc. Set the bedtops to a new dataframe, "MatchBedTops", so they can be joined to the section data
@@ -1206,7 +1205,6 @@ server <- function(input, output) {
     #Join in the Bed Top locations in to the SectData by Thickness (the rounded thickness)
     SectData <- left_join(SectData, MatchBedTops, by = c("Thickness"))
     SectData$BedTop <-  ifelse(is.na(SectData$BedTop), 0, 1)
-    
     
     #Compute the grain size diameter of each point of the sequence. For that, we need a new grain size function. Previously Grain size was a function of x-position on the image, based on the grain size division. Now we need on that is based on the y-position within the grain size profile.
     #Round the grain size points to the nearest thickness/descritized sequence
@@ -1236,7 +1234,6 @@ server <- function(input, output) {
     }
     
     #Modify the the section data based on the number of input GS points between the bed tops
-    #Because the
     print("Modifying GS by number of points - Start")
     for (i in 1:(nrow(MatchBedTops)-1)){
       minbedtop <- as.numeric(MatchBedTops[i,1])
