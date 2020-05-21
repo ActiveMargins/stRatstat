@@ -7,7 +7,7 @@
 
 launchstRatstat <- function(){
 
- # User interface function for stRat stat
+# User interface function for stRat stat
 ui <- navbarPage("stRat stat",
                  navbarMenu("Digitize stratigraphic data",
                             
@@ -108,6 +108,7 @@ ui <- navbarPage("stRat stat",
                                                     actionButton("create_sedstruct_name", "Create sedimentary structure category"), #button to create the sedimentary structure category
                                                     actionButton("delete_sedstruct_name", "Delete sedimentary structure category"), #button to delete the last created sedimentary structure category
                                                     uiOutput("sedstructchoices"), #dynamic radio button list of created sedimentary structures
+                                                    checkboxInput("modifysedstructs", "Clip sedimentary structure boundaries to closest beds?", value = FALSE, width = NULL), #check box to clip the logged facies interval to the nearest beds
                                                     actionButton("rec_sed_brush", "Record sedimentary structure interval") #button to log/record the brushed
                                        ), #end of sidebarPanel
                                        mainPanel(
@@ -144,8 +145,9 @@ ui <- navbarPage("stRat stat",
                                                     actionButton("create_fac_name", "Create facies category"), #button to create the facies category
                                                     actionButton("delete_fac_name", "Delete facies category"), #button to delete the last created facies category
                                                     uiOutput("facieschoices"), #dynamic radio button list of created facies categories
-                                                    actionButton("update_fac", "Record facies interval"), #button to log/record the brushed interval on the right
-                                                    checkboxInput("modifyfacies", "Clip facies boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the logged facies interval to the nearest beds
+                                                    checkboxInput("modifyfacies", "Clip facies boundaries to closest beds?", value = TRUE, width = NULL), #check box to clip the logged facies interval to the nearest beds
+                                                    actionButton("update_fac", "Record facies interval") #button to log/record the brushed interval on the right
+                                                    
                                        ), #end of sidebarPanel
                                        
                                        mainPanel(
@@ -220,8 +222,9 @@ ui <- navbarPage("stRat stat",
                                                     actionButton("create_element_set_name", "Create element set"), #button to create a new element set/interval category
                                                     actionButton("delete_elementset_name", "Delete element set"), #button to delete the last created element set/interval category
                                                     uiOutput("elementsetchoices"), #dynamic radio button list of created element set/interval category
-                                                    actionButton("update_elementset", "Update element set selection"), #button to log/record the brushed itnerval as the selected category
-                                                    checkboxInput("modifyelementsets", "Clip element set boundaries to closest beds?", value = TRUE, width = NULL) #check box to clip the selected element set interval to the nearest bed boundaries
+                                                    checkboxInput("modifyelementsets", "Clip element set boundaries to closest beds?", value = TRUE, width = NULL), #check box to clip the selected element set interval to the nearest bed boundaries
+                                                    actionButton("update_elementset", "Update element set selection") #button to log/record the brushed itnerval as the selected category
+                                                    
                                        ), # end of sidebar
                                        
                                        mainPanel(
@@ -413,14 +416,22 @@ server <- function(input, output) {
   topbottom <- reactiveValues(df=tibble(x=-999,y=-999,PtLabel="Example")) #points picked to locate the top and bottom of the section. x=position on the x-axis of the image, y=position on the y-axis of the image, label=string variable to lable as top and bottom
   gsmarkers <- reactiveValues(df=tibble(x=-999,y=-999,pt=1)) #points to represent the grain size division at the base of the section, x=position on the x-axis of the image, y=position on the y-axis of the image, pt=pt number for the logged points
   bedtops_raw <- reactiveValues(df=tibble(x=-999,y=-999, pt=1, BedTop=1)) #points picked to represent bed boundaries, x=position on the x-axis of the image, y=position on the y-axis of the image, pt=the number of the picked points, bedtop=numeric value of 1, which is used later to signify a the top of a bed in a discretized layer
-  sedstructnames <- reactiveValues(df=tibble(name = "Example Sed. Structure")) #a reactive list of names for sedimentary stucture categories
-  sedstrat_raw <- reactiveValues(df=tibble(ymin_raw=-999,ymax_raw=-998, SedStruct="Example")) #recorded brushes of logged sedimentary structure intervals, y-min_raw and y-max_raw=the y-axis locations of brushes on the ggplot, SedStruct=the selected sedimnentary structure category from the list
-  faciesnames <- reactiveValues(df=tibble(name = "Example Facies")) #a reactive list of names for sedimentary stucture categories
+  sedstrat_raw <- reactiveValues(df=tibble(ymin_raw=-999,ymax_raw=-998, SedStruct="Example", pt=0)) #recorded brushes of logged sedimentary structure intervals, y-min_raw and y-max_raw=the y-axis locations of brushes on the ggplot, SedStruct=the selected sedimnentary structure category from the list
   facies_raw <- reactiveValues(df=tibble(ymin_raw=-999,ymax_raw=-998, FacName="Example", FacBlockNum=0)) #recorded brushes of logged facies intervals, y-min_raw and y-max_raw=the y-axis locations of brushes on the ggplot, FacName=the selected facies category from the list, FaciesBlockNum=the incrementing number of different instances of logged facies - used to summarize data
-  elementnames <- reactiveValues(df=tibble(name = "Example Element")) #a reactive list of names for sedimentary stucture categories
   element_raw <- reactiveValues(df=tibble(ymin_raw=-999,ymax_raw=-998, ElementName="Example", ElementBlockNum=0)) #recorded brushes of logged element intervals, y-min_raw and y-max_raw=the y-axis locations of brushes on the ggplot, ElementName=the selected element category from the list, ElementBlockNum=the incrementing number of different instances of logged elements - used to summarize data
-  elementsetnames <- reactiveValues(df=tibble(name = "Example Element Set")) #a reactive list of names for sedimentary stucture categories
   elementset_raw <- reactiveValues(df=tibble(ymin_raw=-999,ymax_raw=-998, ElementSetName="Example", ElementSetBlockNum=0)) #recorded brushes of logged element set intervals, y-min_raw and y-max_raw=the y-axis locations of brushes on the ggplot, ElementSetName=the selected element set category from the list, ElementSetBlockNum=the incrementing number of different instances of logged element sets - used to summarize data
+  
+
+  values_plot <- reactiveValues(df=NULL) #points to represent the grain size profile values x=position on x-axis of image, y=position on y-axis of image, pt=point number for the logged points
+  topbottom_plot <- reactiveValues(df=NULL) #points picked to locate the top and bottom of the section. x=position on the x-axis of the image, y=position on the y-axis of the image, label=string variable to lable as top and bottom
+  gsmarkers_plot <- reactiveValues(df=NULL) #points to represent the grain size division at the base of the section, x=position on the x-axis of the image, y=position on the y-axis of the image, pt=pt number for the logged points
+  bedtops_raw_plot <- reactiveValues(df=NULL) #points picked to represent bed boundaries, x=position on the x-axis of the image, y=position on the y-axis of the image, pt=the number of the picked points, bedtop=numeric value of 1, which is used later to signify a the top of a bed in a discretized layer
+    
+  sedstructnames <- reactiveValues(df=tibble(name = "Example Sed. Structure")) #a reactive list of names for sedimentary stucture categories
+  faciesnames <- reactiveValues(df=tibble(name = "Example Facies")) #a reactive list of names for sedimentary stucture categories
+  elementnames <- reactiveValues(df=tibble(name = "Example Element")) #a reactive list of names for sedimentary stucture categories
+  elementsetnames <- reactiveValues(df=tibble(name = "Example Element Set")) #a reactive list of names for sedimentary stucture categories
+  
   NumSectData <- reactiveValues(df=tibble(FileName="Example", NumRows = 1)) #Number of sections appeneded together in the stratigraphic library
   TotalSectionData <- reactiveValues(df=tibble(Thickness=0.1)) #Dataframe used in creating the stratigraphic library
   SectDataProcessed <- reactiveValues(df=tibble(Thickness=0.1)) #Dataframe for section data at the end processing the data
@@ -450,7 +461,7 @@ server <- function(input, output) {
   ############################################################################################################
   #Saving the data
   observeEvent(input$save_data,{
-    #Remove all data currently in the SaveData$df so users can't save multiple copies of the same data to one dataframe.
+    #Remove all data that is currently in the SaveData$df (except the first line - a place holder) so users can't save multiple copies of the same data to one dataframe.
     SaveData$df <- SaveData$df[1,]
     
     #Convert all the reactive dataframes in their current state into static dataframes with a new column that says their function
@@ -516,7 +527,7 @@ server <- function(input, output) {
       bedtops_load <- LoadData %>% filter(Save=="BedTops") %>% select(x, y, pt, BedTop) %>% filter (x>0)
       values_load<- LoadData %>% filter(Save=="GSValues") %>% select(x,y,pt) %>% filter (x>0)
       gsmarkers_load <- LoadData %>% filter(Save=="GSMarkers") %>% select(x,y,pt) %>% filter (x>0)
-      sedstrat_load <- LoadData %>% filter(Save=="SedStrut") %>% select(ymin_raw, ymax_raw, SedStruct) %>% filter (ymin_raw>0)
+      sedstrat_load <- LoadData %>% filter(Save=="SedStrut") %>% select(ymin_raw, ymax_raw, SedStruct, pt) %>% filter (ymin_raw>0)
       facies_load <- LoadData %>% filter(Save=="Facies") %>% select(ymin_raw, ymax_raw, FacName, FacBlockNum) %>% filter (ymin_raw>0)
       element_load <- LoadData %>% filter(Save=="Elements") %>% select(ymin_raw, ymax_raw, ElementName, ElementBlockNum) %>% filter (ymin_raw>0)
       elementset_load <- LoadData %>% filter(Save=="ElementSets") %>% select(ymin_raw, ymax_raw, ElementSetName, ElementSetBlockNum) %>% filter (ymin_raw>0)
@@ -579,13 +590,13 @@ server <- function(input, output) {
         BlankTheme +
         annotation_raster(LoadedImage(),ymin=0,ymax=height(LoadedImage()), xmin=0, xmax=width(LoadedImage())) + #add the loaded image, but scale it so its the correct height and width of the image
         coord_cartesian(xlim=ranges2$x,ylim=ranges2$y) + #change the x and y axis to fit the box selected on plot 2
-        geom_point(data=values$df, aes(x=x,y=y),inherit.aes = FALSE, color="green") + #grain size profile poitns are displayed as green dots
-        geom_point(data=gsmarkers$df, aes(x=x,y=y), color="blue") + #grain size division along the bottom are displayed as blue dots
-        geom_point(data=topbottom$df, aes(x=x,y=y), color="red") + #top and bottom of section are red dots
-        geom_hline(yintercept=bedtops_raw$df$y, linetype="dashed", color = "red", size=1) + #bed boundaries are red dashed lines
-        geom_label(data=topbottom$df, aes(x=x, y=y, label=ifelse(x>1, as.character(PtLabel),''),hjust=1.25)) + #label the top and bottom
-        geom_label(data=values$df, aes(x=x, y=y, label=ifelse(x>1, as.character(pt),''),hjust=1.25)) + #label the grains size profile points
-        geom_label(data=bedtops_raw$df, aes(x=3, y=y, label=ifelse(x>1, as.character(pt),''))) #label the bed tops
+        geom_point(data=values_plot$df, aes(x=x,y=y),inherit.aes = FALSE, color="green") + #grain size profile poitns are displayed as green dots
+        geom_point(data=gsmarkers_plot$df, aes(x=x,y=y), color="blue") + #grain size division along the bottom are displayed as blue dots
+        geom_point(data=topbottom_plot$df, aes(x=x,y=y), color="red") + #top and bottom of section are red dots
+        geom_hline(yintercept=bedtops_raw_plot$df$y, linetype="dashed", color = "red", size=1) + #bed boundaries are red dashed lines
+        geom_label(data=topbottom_plot$df, aes(x=x, y=y, label=ifelse(x>1, as.character(PtLabel),''),hjust=1.25)) + #label the top and bottom
+        geom_label(data=values_plot$df, aes(x=x, y=y, label=ifelse(x>1, as.character(pt),''),hjust=1.25)) + #label the grains size profile points
+        geom_label(data=bedtops_raw_plot$df, aes(x=3, y=y, label=ifelse(x>1, as.character(pt),''))) #label the bed tops
     }
   },
   cacheKeyExpr = {list(input$updateplot3,input$plot2_brush, input$delete_pt, input$delete_row)} #only update the right hand plot, when the left plot is brushed, a points are deleted, or the update button is pushed
@@ -598,6 +609,17 @@ server <- function(input, output) {
     if (!is.null(brush)) {
       ranges2$x <- c(brush$xmin, brush$xmax)
       ranges2$y <- c(brush$ymin, brush$ymax)
+      
+      #filter the points that fall within the y bounds of the brush on plot 2 + grab the place holder row the reactive dataframe. Use these filtered dataframes to create plot 3. This decreases the plotting time on plot 3 by roughty ~50%   
+      values_plot$df <- rbind(filter(values$df, y>brush$ymin & y<brush$ymax),values$df[1,]) 
+      bedtops_raw_plot$df <- rbind(filter(bedtops_raw$df, y>brush$ymin & y<brush$ymax),bedtops_raw$df[1,])
+      gsmarkers_plot$df <- rbind(filter(gsmarkers$df, y>brush$ymin & y<brush$ymax),gsmarkers$df[1,])
+      topbottom_plot$df <- rbind(filter(topbottom$df, y>brush$ymin & y<brush$ymax),topbottom$df[1,])
+    
+      
+      print(input$plot2_brush)  
+      print(input$plot4_brush)  
+      
     } else {
       ranges2$x <- null$df$nullx
       ranges2$y <- null$df$nully
@@ -645,15 +667,27 @@ server <- function(input, output) {
   observeEvent(input$delete_pt, { #delete the last row from the dataframe selected by the radio buttons
     if(input$pt_type == 1 & nrow(topbottom$df)>1){
       topbottom$df <- topbottom$df[-nrow(topbottom$df),]
+      if(!is.null(input$plot2_brush)){
+        topbottom_plot$df <- rbind(filter(topbottom$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),topbottom$df[1,])
+      }
     }
     if(input$pt_type == 2 & nrow(gsmarkers$df)>1){
       gsmarkers$df <- gsmarkers$df[-nrow(gsmarkers$df),]
+      if(!is.null(input$plot2_brush)){
+        gsmarkers_plot$df <- rbind(filter(gsmarkers$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),gsmarkers$df[1,])
+      }
     }
     if(input$pt_type == 3 & nrow(bedtops_raw$df)>1){
       bedtops_raw$df <- bedtops_raw$df[-nrow(bedtops_raw$df),]
+      if(!is.null(input$plot2_brush)){
+        bedtops_raw_plot$df <- rbind(filter(bedtops_raw$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),bedtops_raw$df[1,])
+      }
     }
     if(input$pt_type == 4 & nrow(values$df)>1){
       values$df <- values$df[-nrow(values$df),]
+      if(!is.null(input$plot2_brush)){
+        values_plot$df <- rbind(filter(values$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),values$df[1,])
+      }
     }
   })
   
@@ -663,18 +697,30 @@ server <- function(input, output) {
       delete_row <- input$pttable_rows_selected + 1
       if(input$pt_type == 1){
         topbottom$df <- topbottom$df[-(delete_row),]
+        if(!is.null(input$plot2_brush)){
+          topbottom_plot$df <- rbind(filter(topbottom$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),topbottom$df[1,])
+        }
       }
       if(input$pt_type == 2){
         gsmarkers$df <- gsmarkers$df[-(delete_row),]
         gsmarkers$df <- gsmarkers$df %>% mutate(pt=row_number()-1)
+        if(!is.null(input$plot2_brush)){
+          gsmarkers_plot$df <- rbind(filter(gsmarkers$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),gsmarkers$df[1,])
+        }
       }
       if(input$pt_type == 3){
         bedtops_raw$df <- bedtops_raw$df[-(delete_row),]
         bedtops_raw$df <- bedtops_raw$df %>% mutate(pt = row_number()-1)
+        if(!is.null(input$plot2_brush)){
+          bedtops_raw_plot$df <- rbind(filter(bedtops_raw$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),bedtops_raw$df[1,])
+        }
       }
       if(input$pt_type == 4){
         values$df <- values$df[-(delete_row),]
         values$df <- values$df %>% mutate(pt = row_number()-1)
+        if(!is.null(input$plot2_brush)){
+          values_plot$df <- rbind(filter(values$df, y>input$plot2_brush$range$top & y<input$plot2_brush$range$bottom),values$df[1,])
+        }
       }
     }
   })
@@ -704,7 +750,8 @@ server <- function(input, output) {
         annotation_raster(LoadedImage(),ymin=0,ymax =height(LoadedImage()), xmin=0, xmax=width(LoadedImage())) +
         coord_cartesian(xlim=ranges2_sed$x,ylim=ranges2_sed$y) +
         geom_hline(yintercept=bedtops_raw$df$y, linetype="dashed", color = "red", size=1)+
-        geom_rect(data=sedstrat_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=sedstrat_raw$df$ymax_raw, ymax=sedstrat_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1)
+        geom_rect(data=sedstrat_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=sedstrat_raw$df$ymax_raw, ymax=sedstrat_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1) +
+        geom_label(data=sedstrat_raw$df, aes(x=(width(LoadedImage())/2), y=sedstrat_raw$df$ymax_raw+((sedstrat_raw$df$ymin_raw-sedstrat_raw$df$ymax_raw)/2), label=ifelse(sedstrat_raw$df$pt>0, as.character(sedstrat_raw$df$pt),''),hjust=1.25)) #label the logged sedimentary structures
     }
   })
   
@@ -716,25 +763,56 @@ server <- function(input, output) {
       ranges2_sed$y <- c(plot4brush$ymin, plot4brush$ymax)
     } else {
       ranges2_sed$x <- null$df$nullx
-      ranges2_sed$y <- null$dfnully
+      ranges2_sed$y <- null$df$nully
     }
   })
   
   #Record brush on plot 5 as two y-coordinates and the sed structure value
   observeEvent(input$rec_sed_brush, {
     if(is.null(input$plot5_brush)){
-      print("No brush, no data")
     }else{
       #if the brushes are outside of the limits of the section then clip them back to the top or bottom of the image
       plot5brush <- input$plot5_brush
-      topbottompts <- topbottom$df %>% filter(y>0)
+      topbottompts <- topbottom$df %>% filter(x>0)
+      bedtops_raw <- bedtops_raw$df %>% filter(x>0)
+      
       if(plot5brush$ymax[1]>(max(topbottompts$y))){
         plot5brush$ymax[1] <-(max(topbottompts$y))
       }
       if(plot5brush$ymin[1]<(min(topbottompts$y))){
         plot5brush$ymin[1] <-(min(topbottompts$y))
       }
-      sedstrat_raw$df <- bind_rows(sedstrat_raw$df,tibble(ymin_raw=plot5brush$ymax,ymax_raw=plot5brush$ymin, SedStruct=input$sedstruct_input))
+      
+      #if the user wants the Element boundaries to be clipped to bed boundaries then we'll do that
+      if(input$modifysedstructs == TRUE){
+        bedtops_raw <- bind_rows(topbottompts,bedtops_raw)
+        
+        #Top of the Element selection
+        bedindex <-which(abs(bedtops_raw$y-plot5brush$ymax)==min(abs(bedtops_raw$y-plot5brush$ymax)))
+        brushymax <- bedtops_raw[[bedindex,2]]
+        
+        #Bottom of the Element selection
+        bedindex <- which(abs(bedtops_raw$y-plot5brush$ymin)==min(abs(bedtops_raw$y-plot5brush$ymin)))
+        brushymin <- bedtops_raw[[bedindex,2]]
+        
+      }else{ #If the user doesn't want their selected interval to be modified, we wont...unless it falls outside the bounds of the section
+        #If the top of the brush and/or the bottom of the brush are above/below of the  highest bed top and lowest bed top then make them the same as the top and bottom locations?
+        #Reset the top
+        if (plot5brush$ymax>max(bedtops_raw$y)){
+          brushymax <- max(topbottom$df$y)
+        } else {
+          brushymax <- plot5brush$ymax
+        }
+        
+        #Reset the base
+        if (plot5brush$ymin<min(bedtops_raw$y)){
+          brushymin <- min(topbottompts$y)
+        } else {
+          brushymin <- plot5brush$ymin
+        }
+      }
+
+      sedstrat_raw$df <- bind_rows(sedstrat_raw$df,tibble(ymin_raw=brushymax,ymax_raw=brushymin, SedStruct=input$sedstruct_input, pt=nrow(sedstrat_raw$df)-1))
     }
   })
   
@@ -743,16 +821,16 @@ server <- function(input, output) {
     sedstructnames$df <- bind_rows(sedstructnames$df,tibble(name=input$sedstruct_text))
   })
   
+  #Output radio UI
+  output$sedstructchoices <- renderUI({
+    radioButtons("sedstruct_input", "Sedimentary Structures",choices = sedstructnames$df$name)
+  })
+  
   #Delete sedimentary structure name from sedimentary structure list
   observeEvent(input$delete_sedstruct_name, {
     if(nrow(sedstructnames$df)>1){
       sedstructnames$df <- sedstructnames$df[-nrow(sedstructnames$df),]
     }
-  })
-  
-  #Output radio UI
-  output$sedstructchoices <- renderUI({
-    radioButtons("sedstruct_input", "Sedimentary Structures",choices = sedstructnames$df$name)
   })
   
   #Table for logged sedimentary structure data
@@ -772,6 +850,7 @@ server <- function(input, output) {
     if(!is.null(input$sedstrattable_rows_selected)){
       delete_row <- input$sedstrattable_rows_selected + 1
       sedstrat_raw$df <- sedstrat_raw$df[-(delete_row),]
+      sedstrat_raw$df <- sedstrat_raw$df %>% mutate(pt=row_number()-1)
     }
   })
   
@@ -800,7 +879,8 @@ server <- function(input, output) {
         annotation_raster(LoadedImage(),ymin=0,ymax =height(LoadedImage()), xmin=0, xmax=width(LoadedImage())) +
         coord_cartesian(xlim=ranges2_fac$x,ylim=ranges2_fac$y) +
         geom_hline(yintercept=bedtops_raw$df$y, linetype="dashed", color = "red", size=1) +
-        geom_rect(data=facies_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=facies_raw$df$ymax_raw, ymax=facies_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1)
+        geom_rect(data=facies_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=facies_raw$df$ymax_raw, ymax=facies_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1) +
+        geom_label(data=facies_raw$df, aes(x=(width(LoadedImage())/2), y=facies_raw$df$ymax_raw+((facies_raw$df$ymin_raw-facies_raw$df$ymax_raw)/2), label=ifelse(facies_raw$df$FacBlockNum>0, as.character(facies_raw$df$FacBlockNum),''),hjust=1.25)) #label the logged facies blocks
     }
   })
   
@@ -923,7 +1003,8 @@ server <- function(input, output) {
         coord_cartesian(xlim=ranges2_element$x,ylim=ranges2_element$y) +
         BlankTheme +
         geom_hline(yintercept=bedtops_raw$df$y, linetype="dashed", color = "red", size=1)+
-        geom_rect(data=element_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=element_raw$df$ymax_raw, ymax=element_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1)
+        geom_rect(data=element_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=element_raw$df$ymax_raw, ymax=element_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1) +
+        geom_label(data=element_raw$df, aes(x=(width(LoadedImage())/2), y=element_raw$df$ymax_raw+((element_raw$df$ymin_raw-element_raw$df$ymax_raw)/2), label=ifelse(element_raw$df$ElementBlockNum>0, as.character(element_raw$df$ElementBlockNum),''),hjust=1.25)) #label the logged element blocks
     }
   })
   
@@ -1046,7 +1127,7 @@ server <- function(input, output) {
     }
   })
   
-  output$plot11 <- DT::renderDT({
+  output$plot11 <- renderPlot({
     if(is.null(input$files)){} # if there's no file input don't plot anything
     else{ # if there is a file input then plot the interactive ggplot
       ggplot(data=null$df, aes(x=nullx,y=nully))+
@@ -1055,7 +1136,8 @@ server <- function(input, output) {
         annotation_raster(LoadedImage(),ymin=0, ymax=height(LoadedImage()), xmin=0, xmax=width(LoadedImage())) +
         coord_cartesian(xlim=ranges2_elementset$x,ylim=ranges2_elementset$y) +
         geom_hline(yintercept=bedtops_raw$df$y, linetype="dashed", color = "red", size=1)+
-        geom_rect(data=elementset_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=elementset_raw$df$ymax_raw, ymax=elementset_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1)
+        geom_rect(data=elementset_raw$df, mapping=aes(xmin=0, xmax=width(LoadedImage()), ymin=elementset_raw$df$ymax_raw, ymax=elementset_raw$df$ymin_raw), color="blue", inherit.aes = FALSE, alpha = 0.1) +
+        geom_label(data=elementset_raw$df, aes(x=(width(LoadedImage())/2), y=elementset_raw$df$ymax_raw+((elementset_raw$df$ymin_raw-elementset_raw$df$ymax_raw)/2), label=ifelse(elementset_raw$df$ElementSetBlockNum>0, as.character(elementset_raw$df$ElementSetBlockNum),''),hjust=1.25)) #label the logged elementset blocks
     }
   })
   
@@ -1176,7 +1258,9 @@ server <- function(input, output) {
     diameter <- as.numeric(diameter[GScheckGroupIndex])
     #Bind the diameter vector to the picked grain size division dataframe
     df.GS1 <- cbind(gsmarkers,diameter)
- 
+    
+    print(df.GS1)
+    
     #Compute the grain size that is used to turn x coordinates of grain size points (df.GSpts) in to numeric grain size. "rule=2" allow for points picked outside that fall outside of the function to return the closest value.
     fun.GS1 <-approxfun(df.GS1$x, df.GS1$diameter, method="linear", rule=2)
     
@@ -1193,7 +1277,7 @@ server <- function(input, output) {
     
     #Create a sequence for the thickness of the strat section that spans from the thickness a the bottom to the thickness at the top, by the increment set by the user.
     NewY <- seq(from = isolate(input$sectthick_base), to = isolate(input$sectthick_top), by = StratInc)
-    NewY <- NewY[-1]
+    NewY <- NewY[-1] # the first entry into NewY is removed to start the section 
     SectData <- data.frame(Thickness = NewY)
     
     #Mutate in the bedtops using the thickness fucntion (fun.Thick), then round them to the nearest StratInc. Set the bedtops to a new dataframe, "MatchBedTops", so they can be joined to the section data
@@ -1241,7 +1325,7 @@ server <- function(input, output) {
       
       gspts <-  sum((df.GSpts$Thick > minbedtop) & (df.GSpts$Thick <= maxbedtop)) # count the number of digitized grain size points are inbetween those two bedtops
       
-      if(gspts==0){ #if we have no points inbetween two bed tops delete the grain size data and call it cover
+      if(gspts==0){ #if we have no points inbetween two bed tops delete the grain size data and call it cover. Separate if's works better than one long if/else if
         SectData$GS <- ifelse(SectData$Thickness > minbedtop & SectData$Thickness <= maxbedtop, NA, SectData$GS)
       }
       
@@ -1275,9 +1359,6 @@ server <- function(input, output) {
     #Fill in bed numbers then enter loop to fill in the bednum column
     bednumber <- 1
     for (i in 1:nrow(SectData)){ #For loop through the section data and increase the bed number by 1 every time a bed top is found
-      #if (!is.na(SectData[i,3]))
-      #{SectData[i,8] <- bednumber
-      #}
       SectData[i,8] <- bednumber
       if(SectData[i,2]==1){
         bednumber <- bednumber+1
@@ -1445,6 +1526,9 @@ server <- function(input, output) {
       print(df_elementsetsummarize_striplog)
     }
     
+    print(SectData)
+    print(NewY)
+    
     #Bind the SectData back into a reactive dataframe so it can be downloaded and drop the first row of it
     SectDataProcessed$df <-  bind_rows(SectDataProcessed$df,SectData)
     SectDataProcessed$df <-  SectDataProcessed$df[-1,]
@@ -1468,6 +1552,7 @@ server <- function(input, output) {
                 max_gs = max(GS))
     
     #Here we are going to take the data from SectData and extract which beds correspond to which FaciesBlockNum, ElementBlockNum, and ElementsetBlockNum 
+    print("StripLog_BlockNumData")
     striplog_blocknums <- SectData %>% 
       group_by(BedNumber) %>% 
       slice(which.max(Thickness)) %>% #extract the top row of each bed number
@@ -1477,15 +1562,15 @@ server <- function(input, output) {
     striplog <- left_join(striplog, striplog_blocknums, by = "BedNumber") #put the first two parts of the strip log together
     
     #Join the statistics "...summarize_striplog" dataframes if they have been calculated
-    if(input$FaciesStats==TRUE){
+    if(input$FaciesStats==TRUE & nrow(df.facies)>0){
       striplog <- left_join(striplog, df_facsummarize_striplog, by="FaciesBlockNum")
     }
     
-    if(input$ElementStats==TRUE){
+    if(input$ElementStats==TRUE & nrow(df.element)>0){
       striplog <- left_join(striplog, df_elementsummarize_striplog, by="ElementBlockNum")  
     }
     
-    if(input$ElementSetStats==TRUE){
+    if(input$ElementSetStats==TRUE & nrow(df.elementset)>0){
       striplog <- left_join(striplog, df_elementsetsummarize_striplog, by="ElementSetBlockNum")
     }
     
