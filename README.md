@@ -48,10 +48,15 @@ Grain size profile points that are picked in the first bed (i.e., below the firs
 
 ## Troubleshooting
 
+### Known bugs ###
+- An error message may "Cannot find x" may appear on the right-hand plot on the first digitization page. If this appears, rebrush the left-hand plot or click the "Update" button.
+- When deleting points or logged intervals from the table (e.g., grain size profile, sedimentary structure intervals), data may disappear on the right-hand plot. If that happens, move the position of the brush on the left-hand plot and the data will be reloaded
+- The thickness at at the bottom of the section **MUST** be set to zero
+
 ### Image size limitations in stRat stat and how to resize images in R
 stRat stat can only handle small <1 MB images. Images in .png have been found to work better compared to .jpeg. Even though .jpeg often save to smaller file sizes, the lossy compression is apparent when working with images with stRat stat. The lossless compression of .png is helpful. If images are too large to for stRat stat to handle efficiently, the [Imager package](https://dahtah.github.io/imager/imager.html "Imager package") can be used to resize .jpg and .png files easily in R. A simple workflow for this is below:
 
-Imager install
+**Imager install**
 ```
 install.packages(“imager”)
 library(imager)
