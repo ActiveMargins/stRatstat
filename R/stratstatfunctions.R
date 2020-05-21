@@ -486,7 +486,6 @@ server <- function(input, output) {
     
     #Bind them all together to make the save file
     SaveData$df <- bind_rows(SaveData$df,topbottompts, bedtops_raw,values_raw,gsmarkers_raw,sedstrat_raw,facies_raw,element_raw,elementset_raw)
-    print(SaveData$df)
   })
   
   #Downloading Saved Data - use download handler to create a .csv with a name and system date
@@ -615,11 +614,7 @@ server <- function(input, output) {
       bedtops_raw_plot$df <- rbind(filter(bedtops_raw$df, y>brush$ymin & y<brush$ymax),bedtops_raw$df[1,])
       gsmarkers_plot$df <- rbind(filter(gsmarkers$df, y>brush$ymin & y<brush$ymax),gsmarkers$df[1,])
       topbottom_plot$df <- rbind(filter(topbottom$df, y>brush$ymin & y<brush$ymax),topbottom$df[1,])
-    
-      
-      print(input$plot2_brush)  
-      print(input$plot4_brush)  
-      
+     
     } else {
       ranges2$x <- null$df$nullx
       ranges2$y <- null$df$nully
@@ -1052,27 +1047,20 @@ server <- function(input, output) {
       topbottompts<- topbottom$df %>% filter(x>0)
       bedtops_raw <- bedtops_raw$df %>% filter(x>0)
       
-      print("Got Input Data")
-      
       #if the user wants the Element boundaries to be clipped to bed boundaries then we'll do that
       if(input$modifyelements == TRUE){
-        
         bedtops_raw <- bind_rows(topbottompts,bedtops_raw)
-        print("Got all bed tops together")
         
         #Top of the Element selection
         bedindex <-which(abs(bedtops_raw$y-plot9brush$ymax)==min(abs(bedtops_raw$y-plot9brush$ymax)))
         brushymax <- bedtops_raw[[bedindex,2]]
-        print("NewTop")
         
         #Bottom of the Element selection
         bedindex <- which(abs(bedtops_raw$y-plot9brush$ymin)==min(abs(bedtops_raw$y-plot9brush$ymin)))
         brushymin <- bedtops_raw[[bedindex,2]]
-        print("NewBottom")
         
         #If the user doesn't want their selected interval to be modified, we wont...unless it falls outside the bounds of the section
       }else{
-        
         #If the top of the brush and/or the bottom of the brush are above/below of the  highest bed top and lowest bed top then make them the same as the top and bottom locations?
         #Reset the top
         if (plot9brush$ymax>max(bedtops_raw$y)){
@@ -1259,8 +1247,6 @@ server <- function(input, output) {
     #Bind the diameter vector to the picked grain size division dataframe
     df.GS1 <- cbind(gsmarkers,diameter)
     
-    print(df.GS1)
-    
     #Compute the grain size that is used to turn x coordinates of grain size points (df.GSpts) in to numeric grain size. "rule=2" allow for points picked outside that fall outside of the function to return the closest value.
     fun.GS1 <-approxfun(df.GS1$x, df.GS1$diameter, method="linear", rule=2)
     
@@ -1318,7 +1304,6 @@ server <- function(input, output) {
     }
     
     #Modify the the section data based on the number of input GS points between the bed tops
-    print("Modifying GS by number of points - Start")
     for (i in 1:(nrow(MatchBedTops)-1)){
       minbedtop <- as.numeric(MatchBedTops[i,1])
       maxbedtop <- as.numeric(MatchBedTops[i+1,1])
@@ -1457,7 +1442,6 @@ server <- function(input, output) {
     } #End if(nrow(element)>0)
     
     ####Process the Element Set data
-    print("Starting Element Set Data")
     df.elementset <- df.elementset %>% mutate(ymin_thick = round((fun.Thick(df.elementset$ymax_raw))/StratInc)*StratInc, ymax_thick = round((fun.Thick(df.elementset$ymin_raw))/StratInc)*StratInc)
     
     if(nrow(df.elementset)>0){ #If df.elementset has any recorded intervals in it, then process it
@@ -1479,9 +1463,6 @@ server <- function(input, output) {
     
     ####Start bed/facies/element/elementset statistics
     ##In this portion if the check box is checked then statistics will be calculated for each portion of the heirarchy
-    
-    print("Start statistics")
-    
     #Bed Statistics
     if(input$BedStats==TRUE){ #if bed-scales statistics are desired then do the following
       df_bedsummarize_striplog <- SectData %>%
@@ -1489,8 +1470,6 @@ server <- function(input, output) {
         dplyr::summarise(Thickness = max(Thickness), BedThick=n()*StratInc, BedMeanGS = mean(GS, na.rm=TRUE), BedMaxGS=max(GS, na.rm=TRUE)) #great a summary table, the first column (thickenss) will be used to joint the data back to the top of each bed
       df_bedsummarize <- df_bedsummarize_striplog %>% select(-BedNumber) #we drop the bed number row of the summary table so we can just join by the "Thickness column"
       SectData <- left_join(SectData,df_bedsummarize,by = "Thickness") #Join back
-      print("Bed Statistics Run")
-      print(df_bedsummarize_striplog)
     }
     
     #Facies stats
@@ -1500,8 +1479,6 @@ server <- function(input, output) {
         dplyr::summarise(Thickness = max(Thickness), FaciesThick=n()*(StratInc), FaciesMeanGS = mean(GS, na.rm=TRUE), FaciesNetGross=sum(Reservoir)/n()) #calculate a variety of statistics, and a thickness row like above
       df_facsummarize <- df_facsummarize_striplog %>% select(-FaciesBlockNum) #drop facies block number so just join by Thickness
       SectData <- left_join(SectData,df_facsummarize,by = "Thickness") #Join back
-      print("Facies Statistics Run")
-      print(df_facsummarize_striplog)
     }
     
     #Element statistics
@@ -1511,8 +1488,6 @@ server <- function(input, output) {
         dplyr::summarise(Thickness = max(Thickness), ElementThick=n()*(StratInc), ElementMeanGS = mean(GS, na.rm=TRUE), ElementNetGross=sum(Reservoir)/n())
       df_elementsummarize <- df_elementsummarize_striplog %>% select(-ElementBlockNum)
       SectData <- left_join(SectData,df_elementsummarize,by = "Thickness")
-      print("Element Statistics Run")
-      print(df_elementsummarize_striplog)
     }
     
     #Element Set statistics
@@ -1522,12 +1497,7 @@ server <- function(input, output) {
         dplyr::summarise(Thickness = max(Thickness), ElementSetThick=n()*(StratInc), ElementSetMeanGS = mean(GS, na.rm=TRUE), ElementSetNetGross=sum(Reservoir)/n())
       df_elementsetsummarize <- df_elementsetsummarize_striplog %>% select(-ElementSetBlockNum)
       SectData <- left_join(SectData,df_elementsetsummarize,by = "Thickness")
-      print("ElementSet Statistics Run")
-      print(df_elementsetsummarize_striplog)
     }
-    
-    print(SectData)
-    print(NewY)
     
     #Bind the SectData back into a reactive dataframe so it can be downloaded and drop the first row of it
     SectDataProcessed$df <-  bind_rows(SectDataProcessed$df,SectData)
@@ -1535,8 +1505,6 @@ server <- function(input, output) {
     
     ####Create reactive dataframe that is in StripLog Format
     ##In this section we are going to first take the SectData and pull out some statistics on each bed. Then a for loop will be used to go through each bed and grab other information before the two dataframes are joined together
-    print("Starting strip log formatting")
-    print("Doing strip log summarize")
     #write.csv(SectData, file="~/SectDataPreStats.csv")
     striplog <- SectData %>% 
       #filter(!is.na(BedNumber)) %>% #remove any NA bed numbers (i.e., cover/missing core) then calculate some key variables 
@@ -1552,7 +1520,6 @@ server <- function(input, output) {
                 max_gs = max(GS))
     
     #Here we are going to take the data from SectData and extract which beds correspond to which FaciesBlockNum, ElementBlockNum, and ElementsetBlockNum 
-    print("StripLog_BlockNumData")
     striplog_blocknums <- SectData %>% 
       group_by(BedNumber) %>% 
       slice(which.max(Thickness)) %>% #extract the top row of each bed number
@@ -1583,16 +1550,12 @@ server <- function(input, output) {
     
     #A dataframe is create that will have the concatinated strings in side it. This will be populated in the loop below. 
     df.GS_join <- data.frame(x=c(1),grain_size_dia=c("1"),grain_size_thick=c("1"),BedBase=c(1), BedTop=c(1)) #create new dataframe for the for loop that is coming up next to add onto
-    
-    #print("Entering For Loop")
     for(x in 1:(length(MatchBedTops$Thickness)-1)) { # loop through each bed and create two strings for each bed. One that has the grain size values that were clicked on the image in the grain size profile, and one that has the thickness measurements that relate to those clicked grain size values. 
-      #print(paste("Bed Number: ", x))
       BedBase_filter <- MatchBedTops[x,1] #thickness of section to the the base of the bed in question
       BedTop_filter <- MatchBedTops[x+1,1] #thickness of section to the top of the bed (the base of the next bed)
       df.GSpts_filter <- df.GSpts %>% filter(Thick>BedBase_filter$Thickness[1] & Thick<BedTop_filter$Thickness[1]) #filter all the grain size points to find the grain size points that are within the bed bounds
-      
       VecLength <- nrow(df.GSpts_filter) #how many points are there
-      #print(VecLength)
+
       if(nrow(df.GSpts_filter)==0){ #if there are not points within the bed boundaries (it would have been considered cover), give it a single NA value in both strings
         grain_size_dia <- "NA"
         grain_size_thick <- "NA"
@@ -1601,9 +1564,7 @@ server <- function(input, output) {
         grain_size_thick <- paste0(df.GSpts_filter$Thick, collapse=",")
       } 
       
-      #print(paste("BedBase =",BedBase_filter$Thickness[1],". BedTop =",BedTop_filter$Thickness[1],". ConcatenatedGS =",grain_size_dia, ". Length =", VecLength))
       df.GS_join <- rbind(df.GS_join,data.frame(x,grain_size_dia,grain_size_thick, BedBase=BedBase_filter$Thickness[1], BedTop=BedTop_filter$Thickness[1])) #Join the strings from the if/else statement into the dataframe
-      #print("Joined")
     }
     
     df.GS_join <- df.GS_join[-1,] #drop the first row of the dataframe from above. the first row was a place holder
@@ -1698,15 +1659,12 @@ server <- function(input, output) {
     
     #If bed is selected group by BedNumber then filter on !is.Na to then summarize different statistics on each of those groups: df_bedsummarize <- dplyr::group_by(SectData, BedNumber) %>% dplyr::summarise(Thickness = max(Thickness), BedThick=n()*0.1, MeanGS = mean(GS), MaxGS=max(GS))
     if(input$Discrete_BedStat == TRUE){
-      print("Doing Bed Statistics")
       
       #Get the names of the columns that we'll need then remove them from the SectData
       BedStatCol <- c(ColNames,"BedNumber")
       BedStatJoin <- c("BedNumber","Thickness")
       BedSummarize  <-  SectData[,BedStatCol] # should use dplyr::select for this eventually
       BedStatJoin <- SectData[,BedStatJoin] # should use dplyr::select for this eventually
-      print("Bed Summarize")
-      print(BedSummarize)
       
       #Group by BedNum Summarize_all (min, max, average, stdev)
       BedSummarizeStat <- BedSummarize %>%
@@ -1714,8 +1672,6 @@ server <- function(input, output) {
         summarise_all(.funs = c(min="min", max="max", mean="mean", sd="sd"),na.rm = TRUE) # we are going to find the minimum, maximum, mean, and standar deviation of each descrete measurement type, NAs will be ignored
       BedSummarizeStat[sapply(BedSummarizeStat, is.infinite)] <- NA # because some beds have no measurements they will have a summarized value of infinite (INF), so we will change the INF for NA
       
-      print("Summarized data")
-      print(BedSummarizeStat)
       #Add a prefix (BedStat.) to each column, then fix the BedNumber column
       BedSummarizeStat <- BedSummarizeStat %>%
         setNames(paste0('BedStat.', names(.))) %>%
@@ -1725,28 +1681,20 @@ server <- function(input, output) {
       BedStatJoin <- BedStatJoin %>%
         group_by(BedNumber) %>%
         summarise(Thickness = max(Thickness))
-      print("Join Dataframe")
-      print(BedStatJoin)
       
       #Join back to the sect data, first by joining the two summarized data together, then the summarized data to the SectData
       BedStatJoin <- left_join(BedStatJoin,BedSummarizeStat,by="BedNumber") %>% select(-BedNumber)
-      print("Joined Dataframe")
-      print(BedStatJoin)
       SectData <- left_join(SectData,BedStatJoin, by="Thickness")
-      print(SectData)
     } #End of bed statistics
     
     #If summarize by Facies is selected, group by FaciesBlockNum
     if(input$Discrete_FaciesStat == TRUE & "FaciesBlockNum" %in% colnames(SectData)){
-      print("Doing Facies Statistics")
       
       #Get the names of the columns that we'll need then remove them from the SectData
       FaciesStatCol <- c(ColNames,"FaciesBlockNum")
       FaciesStatJoin <- c("FaciesBlockNum","Thickness")
       FaciesSummarize  <-  SectData[,FaciesStatCol] # should use dplyr::select for this eventually
       FaciesStatJoin <- SectData[,FaciesStatJoin] # should use dplyr::select for this eventually
-      print("Facies Summarize")
-      print(FaciesSummarize)
       
       #Group by FaciesNum Summarize_all (min, max, average, stdev)
       FaciesSummarizeStat <- FaciesSummarize %>%
@@ -1771,15 +1719,12 @@ server <- function(input, output) {
     
     #If Element is selected group by ElementBlockNum
     if(input$Discrete_ElementStat == TRUE & "ElementBlockNum" %in% colnames(SectData)){
-      print("Doing Element Statistics")
       
       #Get the names of the columns that we'll need then remove them from the SectData
       ElementStatCol <- c(ColNames,"ElementBlockNum")
       ElementStatJoin <- c("ElementBlockNum","Thickness")
       ElementSummarize  <-  SectData[,ElementStatCol] # should use dplyr::select for this eventually
       ElementStatJoin <- SectData[,ElementStatJoin] # should use dplyr::select for this eventually
-      print("Element Summarize")
-      print(ElementSummarize)
       
       #Group by ElementNum Summarize_all (min, max, average, stdev)
       ElementSummarizeStat <- ElementSummarize %>%
@@ -1804,15 +1749,12 @@ server <- function(input, output) {
     
     #If ElementSet is selected group by ElementSetBlockNum
     if(input$Discrete_ElementSetStat == TRUE & "ElementSetBlockNum" %in% colnames(SectData)){
-      print("Doing ElementSet Statistics")
       
       #Get the names of the columns that we'll need then remove them from the SectData
       ElementSetStatCol <- c(ColNames,"ElementSetBlockNum")
       ElementSetStatJoin <- c("ElementSetBlockNum","Thickness")
       ElementSetSummarize  <-  SectData[,ElementSetStatCol] # should use dplyr::select for this eventually
       ElementSetStatJoin <- SectData[,ElementSetStatJoin] # should use dplyr::select for this eventually
-      print("ElementSet Summarize")
-      print(ElementSetSummarize)
       
       #Group by ElementSetNum Summarize_all (min, max, average, stdev)
       ElementSetSummarizeStat <- ElementSetSummarize %>%
@@ -1842,8 +1784,6 @@ server <- function(input, output) {
     #Bind the joined data to the reactive dataframe
     SectDataJoined_Disc$df <-  bind_rows(SectDataJoined_Disc$df,SectData)
     SectDataJoined_Disc$df <-  SectDataJoined_Disc$df[-1,]
-    
-    print(nrow(SectData))
     
   }) #end of ImportMeasurements
   
@@ -1888,7 +1828,6 @@ server <- function(input, output) {
     }
     
     ThickCol <- input$ThickColumn2
-    print(ThickCol)
     SectDataThickCol <- which(colnames(SectData)=="Thickness")
     
     ##Find the increments of both datasets
@@ -1923,8 +1862,8 @@ server <- function(input, output) {
           } #End of processing approx fun data processing
         } #End of for loop
       } else { #If the data is not to be interpolated, rename the indicated thickness column and round thickness measurements to the stratigraphic increments
+        
         #Rename thickness Column
-        print(MeasurementData)
         colnames(MeasurementData)[ThickCol] <- "Thickness"
         
         #Round the thickness to the nearest descritized increment
@@ -1990,8 +1929,6 @@ server <- function(input, output) {
         group_by(BedNumber) %>%
         summarise_at(vars(-Thickness), .funs = c(min="min", max="max", mean="mean", sd="sd"), na.rm=TRUE)
       
-      print(BedSummarizeStat)
-      
       #Add a prefix (BedStat.) to each column, then fix the BedNumber column
       BedSummarizeStat <- BedSummarizeStat %>%
         setNames(paste0('BedStat.', names(.))) %>%
@@ -2040,13 +1977,10 @@ server <- function(input, output) {
       FaciesStatJoin <- left_join(FaciesStatJoin,FaciesSummarizeStat,by="FaciesBlockNum") %>% select(-FaciesBlockNum)
       #FaciesStatJoin <- FaciesStatJoin[ , !(names(FaciesStatJoin) %in% c("FaciesBlockNum"))]
       SectData <- left_join(SectData,FaciesStatJoin, by="Thickness")
-      #print(SectData)
     }
     
     #If summarize by element is selected then we summarize based on ElementBlockNum
     if(input$Continuous_ElementStat == TRUE & "ElementBlockNum" %in% colnames(SectData)){
-      
-      print("Summarizing Elements")
       
       #Do some selection of columns, we are going to
       ElementStatCol <- ColNames
@@ -2072,21 +2006,15 @@ server <- function(input, output) {
         group_by(ElementBlockNum) %>%
         summarise(Thickness = max(Thickness))
       
-      print("ElementStatJoin - Max thickness for joining by ElementBlockNum")
-      
       #join back to the stect data
       ElementStatJoin <- left_join(ElementStatJoin,ElementSummarizeStat,by="ElementBlockNum")  %>% select(-ElementBlockNum)
       #ElementStatJoin <- ElementStatJoin[ , !(names(ElementStatJoin) %in% c("ElementBlockNum"))]
-      SectData <- left_join(SectData,ElementStatJoin, by="Thickness")
-      #print(SectData)
-      
+      SectData <- left_join(SectData,ElementStatJoin, by="Thickness")     
     }
     
     #If summarize by facies is selected then we summarize based on ElementSetBlockNum
     if(input$Continuous_ElementSetStat == TRUE & "ElementSetBlockNum" %in% colnames(SectData)){
-      
-      print("Summarizing ElementSets")
-      
+
       #Do some selection of columns, we are going to
       ElementSetStatCol <- ColNames
       ElementSetStatCol <- c(ElementSetStatCol,"ElementSetBlockNum")
@@ -2111,17 +2039,12 @@ server <- function(input, output) {
         group_by(ElementSetBlockNum) %>%
         summarise(Thickness = max(Thickness))
       
-      print("ElementSetStatJoin - Max thickness for joining by ElementSetBlockNum")
-      
       #join back to the stect data
       ElementSetStatJoin <- left_join(ElementSetStatJoin,ElementSetSummarizeStat,by="ElementSetBlockNum") %>% select(-ElementSetBlockNum)
       #ElementSetStatJoin <- ElementSetStatJoin[ , !(names(ElementSetStatJoin) %in% c("ElementSetBlockNum"))]
       SectData <- left_join(SectData,ElementSetStatJoin, by="Thickness")
-      #print(SectData)
     }
-    
-    #print(SectData)
-    
+       
     #Bind the joined data to the reactive dataframe
     SectDataJoined_Cont$df <-  bind_rows(SectDataJoined_Cont$df,SectData)
     SectDataJoined_Cont$df <-  SectDataJoined_Cont$df[-1,]
@@ -2150,7 +2073,6 @@ server <- function(input, output) {
   observeEvent(input$ImportSectionData,{ #when the "import"Import Selected File" button is clicked
     #Read the .csv and bind all the SectData from that file to the total data keeping all columns
     TempSectFile <- read.csv(input$Sectfile$datapath, header = TRUE, sep = ",", stringsAsFactors=TRUE, na.strings = "NA")
-    print(TempSectFile)
     TotalSectionData$df <-  bind_rows(TotalSectionData$df,TempSectFile)
     
     #Remove previous place holder
